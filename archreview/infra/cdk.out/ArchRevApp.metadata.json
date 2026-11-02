@@ -1,0 +1,1766 @@
+{
+  "/ArchRevApp": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node, ts-node..."
+      ]
+    },
+    {
+      "type": "aws:cdk:warning",
+      "data": "No cross-stack-reference strength configured, defaulting to \"strong\". We recommend you set feature flag \"@aws-cdk/core:defaultCrossStackReferences\" to \"both\", then deploy everywhere, then set it to \"weak\". Alternatively, set it to \"strong\" explicitly to lock in the current producer-protecting behavior. (See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/README.md#reference-strength) [ack: @aws-cdk/core:crossStackReferencesDefaultStrong]",
+      "trace": [
+        "Annotations.addMessage (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/annotations.js:1:3506)",
+        "Annotations.addWarningV2 (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/annotations.js:1:2194)",
+        "resolveValue (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/private/refs.js:1:7177)",
+        "resolveReferencesInElements (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/private/refs.js:1:5045)",
+        "resolveReferences (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/private/refs.js:1:4718)",
+        "prepareApp (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/private/prepare-app.js:1:1240)",
+        "synthesize (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/private/synthesis.js:1:2625)",
+        "App.synth (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/stage.js:1:5061)",
+        "App.synth (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/app.js:1:5364)",
+        "process.<anonymous> (/home/tommy/demo/archreview/infra/node_modules/aws-cdk-lib/core/lib/app.js:1:4274)",
+        "Object.onceWrapper (node:events:631:26)",
+        "process.emit (node:events:509:28)",
+        "process.emit (node:domain:489:12)",
+        "process.emit.sharedData.processEmitHook.installedValue [as emit] (/home/tommy/demo/archreview/infra/node_modules/@cspotcode/source-map-support/source-map-support.js:745:40)"
+      ]
+    },
+    {
+      "type": "aws:cdk:templateFile",
+      "data": "ArchRevApp.template.json"
+    },
+    {
+      "type": "aws:cdk:stack-tags",
+      "data": [
+        {
+          "key": "Application",
+          "value": "EnterpriseSolutionReviewAssistant"
+        },
+        {
+          "key": "Environment",
+          "value": "demo"
+        }
+      ]
+    }
+  ],
+  "/ArchRevApp/standardsRuntime": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "standardsRuntime"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:85:18)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/standardsRuntimeArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "standardsRuntimeArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:109:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/catalogRuntime": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "catalogRuntime"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:85:18)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/catalogRuntimeArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "catalogRuntimeArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:109:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Group-architect": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Grouparchitect"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:159:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Group-governance": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Groupgovernance"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:159:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiAcl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiAcl"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:296:20)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiAclAssoc": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiAclAssoc"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:329:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/ArchRevApp/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-singleton",
+      "data": true
+    },
+    {
+      "type": "aws:cdk:is-custom-resource-handler-runtime-family",
+      "data": 2
+    }
+  ],
+  "/ArchRevApp/AWSCloudFrontPartitionHostedZoneIdMap": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AWSCloudFrontPartitionHostedZoneIdMap"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ARecord2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:394:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/SiteUrl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteUrl"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:446:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/CloudFrontDomain": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CloudFrontDomain"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:447:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/CloudFrontDistributionId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CloudFrontDistributionId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:448:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiUrl": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiUrl"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:449:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/UserPoolId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:450:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/UserPoolClientId": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UserPoolClientId"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:451:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/TableName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "TableName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:452:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/WorkerFunctionName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkerFunctionName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:453:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiFunctionName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFunctionName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:454:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/DashboardName": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DashboardName"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:455:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/AlarmTopicArn": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AlarmTopicArn"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:456:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::CrossRegionExportReaderCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/ArchRevApp/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/standardsMcpRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "standardsMcpRoleAC81747D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Role2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:53:20)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/standardsMcpPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "standardsMcpPolicy9F5CDF2D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Policy2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:62:22)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/standardsRuntimeArnParam/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "standardsRuntimeArnParamDC4A3FE4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StringParameter2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:106:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/catalogMcpRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "catalogMcpRole676B9AB3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Role2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:53:20)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/catalogMcpPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "catalogMcpPolicyC1146FD4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Policy2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:62:22)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/catalogRuntimeArnParam/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "catalogRuntimeArnParam2088B95E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StringParameter2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:106:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ModelIdsParam/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ModelIdsParam6EEB8324"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StringParameter2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:113:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Reviews/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReviewsAA74421E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:120:19)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Users/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Users0A0EEA89"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new UserPool2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:144:18)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/WorkerLogs/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkerLogsC1193B08"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:181:24)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Worker/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Worker11F36D0F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:184:20)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiFnLogs/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFnLogsADB874AE"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:219:21)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiFn/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFnE0725F78"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:222:19)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiAccessLogs/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiAccessLogsE9DF007D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new LogGroup2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:244:24)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiF70053CD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:247:17)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Account": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiAccountA18C9B29"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:247:17)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Endpoint": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiEndpoint4F160690"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:247:17)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Authorizer/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuthorizerBD825682"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new CognitoUserPoolsAuthorizer2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:281:24)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Site/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteE53D7754"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:334:24)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketAutoDeleteObjects"
+      }
+    }
+  ],
+  "/ArchRevApp/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/SecurityHeaders/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SecurityHeadersE66B69D3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ResponseHeadersPolicy2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:342:21)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Cdn/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Cdn9963B1AD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Distribution2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:359:18)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB6723FB92"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new BucketDeployment2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:375:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/SiteA/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteA3B2F7CD6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new ARecord2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:394:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/SiteAAAA/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteAAAA213135E7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new AaaaRecord2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:395:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Alarms/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Alarms04B5A0BF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Topic2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:398:19)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/WorkerErrors/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkerErrorsDD2E3D24"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:405:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ReviewsFailed/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReviewsFailed69A8E2A2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:409:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api5xx/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Api5xx3D9EE91A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:413:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiLatencyP95/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiLatencyP953F4AC26C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:417:7)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/McpErrors0/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "McpErrors0263254E2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "/home/tommy/demo/archreview/infra/lib/app-stack.ts:421: (/home/tommy/demo/archreview/infra/lib/app-stack.ts:421:7)",
+        "Array.map (:)",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:421:63)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/McpErrors1/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "McpErrors103C43072"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "/home/tommy/demo/archreview/infra/lib/app-stack.ts:421: (/home/tommy/demo/archreview/infra/lib/app-stack.ts:421:7)",
+        "Array.map (:)",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:421:63)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Dashboard/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Dashboard9E4231ED"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Dashboard2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:428:18)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::CrossRegionExportReaderCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportReaderCustomResourceProviderRole10531BBD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::CrossRegionExportReaderCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCrossRegionExportReaderCustomResourceProviderHandler46647B68"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/standardsMcpRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "standardsMcpRoleDefaultPolicyE673D49B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/catalogMcpRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "catalogMcpRoleDefaultPolicyA7E09BCD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Users/WebClient/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "UsersWebClient8EE36D42"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addClient in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:161:25)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Worker/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkerServiceRole8543584E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:184:20)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Worker/EventInvokeConfig/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkerEventInvokeConfig3C332003"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:184:20)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiFn/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFnServiceRoleD18AAE0E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:222:19)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/CloudWatchRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiCloudWatchRole73EC6FC4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:247:17)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Deployment/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiDeploymentB17BE62D87c3a6615a7b8054fcfc0ad48c5a5fa3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:247:17)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/DeploymentStage.v1/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiDeploymentStagev102147F91"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:247:17)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default4xx/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiDefault4xx3D30C544"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addGatewayResponse in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:275:11)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default5xx/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiDefault5xx350DA352"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addGatewayResponse in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:275:11)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Site/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SitePolicyC4000D7D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:334:24)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketPolicyStatements"
+      }
+    }
+  ],
+  "/ArchRevApp/Site/AutoDeleteObjectsCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SiteAutoDeleteObjectsCustomResourceBFAA9B42"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/DeploySite/AwsCliLayer/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DeploySiteAwsCliLayer88B0EBE2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new BucketDeployment2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:375:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/DeploySite/CustomResource-512MiB/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DeploySiteCustomResource512MiB5775DB62"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new BucketDeployment2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:375:5)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleBA21DBC1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/ExportsReader/Resource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ExportsReader8B249524"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Worker/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "WorkerServiceRoleDefaultPolicyAE71B5FA"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:184:20)"
+      ]
+    }
+  ],
+  "/ArchRevApp/ApiFn/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiFnServiceRoleDefaultPolicy56A1E6E5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:222:19)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiOPTIONS5886EA5D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:247:17)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/health/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Apihealth5CB7A415"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:285:14)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Apiauth161C653C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:286:27)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/me/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApimeE419BFF3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:289:14)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsBCBDBF1B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:290:30)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Cdn/Origin1/S3OriginAccessControl/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CdnOrigin1S3OriginAccessControl6AC0AEFC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Distribution2 in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:359:18)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleDefaultPolicy96C3E726"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/health/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApihealthOPTIONS119B6E46"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:285:14)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/health/GET/ApiPermission.ArchRevAppApiF04690A0.GET..health": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApihealthGETApiPermissionArchRevAppApiF04690A0GEThealthE5ECB518"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:285:36)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/health/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..health": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApihealthGETApiPermissionTestArchRevAppApiF04690A0GEThealthB8ECCB82"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:285:36)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/health/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApihealthGET8A9DC1E4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:285:36)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthOPTIONSC18B26B2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:286:27)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/register/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Apiauthregister43B003AC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:287:10)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/login/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Apiauthlogin425AB418"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:288:10)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/me/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApimeOPTIONS42FCCDD6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:289:14)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/me/GET/ApiPermission.ArchRevAppApiF04690A0.GET..me": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApimeGETApiPermissionArchRevAppApiF04690A0GETme42D9F31F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:289:32)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/me/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..me": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApimeGETApiPermissionTestArchRevAppApiF04690A0GETme07E05FA8"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:289:32)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/me/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApimeGET6BB88685"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:289:32)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsOPTIONSB45266A1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:290:30)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/POST/ApiPermission.ArchRevAppApiF04690A0.POST..reviews": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsPOSTApiPermissionArchRevAppApiF04690A0POSTreviews61276BD3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:291:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/POST/ApiPermission.Test.ArchRevAppApiF04690A0.POST..reviews": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsPOSTApiPermissionTestArchRevAppApiF04690A0POSTreviews1F89CB20"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:291:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/POST/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsPOST6D2C3AE9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:291:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/GET/ApiPermission.ArchRevAppApiF04690A0.GET..reviews": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsGETApiPermissionArchRevAppApiF04690A0GETreviews1B864D12"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:292:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..reviews": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsGETApiPermissionTestArchRevAppApiF04690A0GETreviewsCC452875"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:292:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsGET8FD667D1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:292:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/{id}/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "Apireviewsid3FF81585"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:293:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/register/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthregisterOPTIONS2E4F097E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:287:10)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/register/POST/ApiPermission.ArchRevAppApiF04690A0.POST..auth.register": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthregisterPOSTApiPermissionArchRevAppApiF04690A0POSTauthregister6BC9C542"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:287:34)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/register/POST/ApiPermission.Test.ArchRevAppApiF04690A0.POST..auth.register": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthregisterPOSTApiPermissionTestArchRevAppApiF04690A0POSTauthregister8E0A9B88"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:287:34)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/register/POST/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthregisterPOST7825E6CB"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:287:34)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/login/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthloginOPTIONSCCF6F50B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:288:10)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/login/POST/ApiPermission.ArchRevAppApiF04690A0.POST..auth.login": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthloginPOSTApiPermissionArchRevAppApiF04690A0POSTauthlogin99021753"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:288:31)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/login/POST/ApiPermission.Test.ArchRevAppApiF04690A0.POST..auth.login": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthloginPOSTApiPermissionTestArchRevAppApiF04690A0POSTauthlogin8CFFA7E7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:288:31)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/auth/login/POST/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApiauthloginPOSTFBEAB6D5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:288:31)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/{id}/OPTIONS/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsidOPTIONS2E04A775"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addResource in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:293:13)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)"
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/{id}/GET/ApiPermission.ArchRevAppApiF04690A0.GET..reviews.{id}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsidGETApiPermissionArchRevAppApiF04690A0GETreviewsidF700FC3E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:293:33)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/{id}/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..reviews.{id}": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsidGETApiPermissionTestArchRevAppApiF04690A0GETreviewsidF44BF778"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:293:33)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node..."
+      ]
+    }
+  ],
+  "/ArchRevApp/Api/Default/reviews/{id}/GET/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ApireviewsidGETE0917F68"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...PropertyInjectable.addMethod in aws-cdk-lib...",
+        "new AppStack (/home/tommy/demo/archreview/infra/lib/app-stack.ts:293:33)",
+        "<anonymous> (/home/tommy/demo/archreview/infra/bin/app.ts:25:14)",
+        "...node internals, ts-node, ts-node..."
+      ]
+    }
+  ]
+}

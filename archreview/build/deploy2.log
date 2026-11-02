@@ -1,0 +1,59 @@
+AI agent detected
+[WARNING] aws-cdk-lib.Stack#addDependency is deprecated, and will be removed in the next major release.
+  Use `addStackDependency` instead.
+Including dependency stacks: ArchRevEdge
+WARNING No cross-stack-reference strength configured, defaulting to "strong". We recommend you set feature flag "@aws-cdk/core:defaultCrossStackReferences" to "both", then deploy everywhere, then set it to "weak". Alternatively, set it to "strong" explicitly to lock in the current producer-protecting behavior. (See: https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/README.md#reference-strength) (Construct Annotations)
+   ArchRevApp
+   Acknowledge with 'Annotation::@aws-cdk/core:crossStackReferencesDefaultStrong'
+
+✨  Synthesis time: 20.82s
+
+ArchRevEdge
+ArchRevApp: start: Building DeploySite/Asset2
+ArchRevApp: success: Built DeploySite/Asset2
+ArchRevApp: start: Building ArchRevApp Template
+ArchRevApp: success: Built ArchRevApp Template
+ArchRevEdge: deploying... [1/2]
+
+✅  ArchRevEdge (no changes)
+
+✨  Deployment time: 0s
+
+Outputs:
+ArchRevEdge.CertificateArn = arn:aws:acm:us-east-1:154833006816:certificate/b049f6c9-2793-47c4-b227-45838db4e0b7
+ArchRevEdge.CloudFrontWebAclArn = arn:aws:wafv2:us-east-1:154833006816:global/webacl/archrev-cloudfront-acl/9854c35e-c80f-4862-a611-04b6ac94c639
+Stack ARN:
+arn:aws:cloudformation:us-east-1:154833006816:stack/ArchRevEdge/fbecc7d0-d6f0-11f1-a401-0affc60db36f
+ArchRevApp: start: Publishing DeploySite/Asset2 (154833006816-us-west-2-0013fb0d)
+ArchRevApp: start: Publishing ArchRevApp Template (154833006816-us-west-2-68d951fa)
+ArchRevApp: success: Published DeploySite/Asset2 (154833006816-us-west-2-0013fb0d)
+ArchRevApp: success: Published ArchRevApp Template (154833006816-us-west-2-68d951fa)
+ArchRevApp
+ArchRevApp: creating CloudFormation changeset...
+ArchRevApp: deploying... [2/2]
+
+✅  ArchRevApp
+
+✨  Deployment time: 58.79s
+
+Outputs:
+ArchRevApp.AlarmTopicArn = arn:aws:sns:us-west-2:154833006816:ArchRevApp-Alarms04B5A0BF-2OXSbutQUp2J
+ArchRevApp.ApiEndpoint4F160690 = https://cyymo0cvd3.execute-api.us-west-2.amazonaws.com/v1/
+ArchRevApp.ApiFunctionName = ArchRevApp-ApiFnE0725F78-kT2xlzvKnCMt
+ArchRevApp.ApiUrl = https://cyymo0cvd3.execute-api.us-west-2.amazonaws.com/v1/
+ArchRevApp.CloudFrontDistributionId = E323KWYINSQZDA
+ArchRevApp.CloudFrontDomain = d2r13fnyquilv0.cloudfront.net
+ArchRevApp.DashboardName = archrev-demo
+ArchRevApp.SiteUrl = https://archreview.awsteach.com
+ArchRevApp.TableName = ArchRevApp-ReviewsAA74421E-3WEFWJA0C76E
+ArchRevApp.UserPoolClientId = 3p2pgut75j329sne5i8ivt1286
+ArchRevApp.UserPoolId = us-west-2_zzr0j78h3
+ArchRevApp.WorkerFunctionName = ArchRevApp-Worker11F36D0F-Mts0jT13nVtk
+ArchRevApp.catalogRuntimeArn = arn:aws:bedrock-agentcore:us-west-2:154833006816:runtime/archrev_catalog_mcp-EEhX9dDawJ
+ArchRevApp.standardsRuntimeArn = arn:aws:bedrock-agentcore:us-west-2:154833006816:runtime/archrev_standards_mcp-OfMjbH9rKl
+Stack ARN:
+arn:aws:cloudformation:us-west-2:154833006816:stack/ArchRevApp/7a3a75b0-d6f1-11f1-b74d-02fffe3dfa03
+
+✨  Total time: 108.22s
+
+EXIT=0

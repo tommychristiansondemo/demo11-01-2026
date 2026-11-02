@@ -1,0 +1,11 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/app.ts",
+  "context": {
+    "@aws-cdk/core:bootstrapQualifier": "archrev",
+    "zoneName": "awsteach.com",
+    "hostedZoneId": "Z02882605B7GUS0L3VHX",
+    "recordName": "archreview",
+    "region": "us-west-2"
+  },
+  "toolkitStackName": "ArchRevCDKToolkit"
+}

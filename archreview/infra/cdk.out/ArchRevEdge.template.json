@@ -1,0 +1,275 @@
+{
+ "Description": "Enterprise Solution Review Assistant (demo): ACM certificate and CloudFront WAF (us-east-1)",
+ "Resources": {
+  "SiteCert6025247C": {
+   "Type": "AWS::CertificateManager::Certificate",
+   "Properties": {
+    "DomainName": "archreview.awsteach.com",
+    "DomainValidationOptions": [
+     {
+      "DomainName": "archreview.awsteach.com",
+      "HostedZoneId": "Z02882605B7GUS0L3VHX"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     },
+     {
+      "Key": "Name",
+      "Value": "ArchRevEdge/SiteCert"
+     }
+    ],
+    "ValidationMethod": "DNS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevEdge/SiteCert/Resource"
+   }
+  },
+  "CloudFrontAcl": {
+   "Type": "AWS::WAFv2::WebACL",
+   "Properties": {
+    "DefaultAction": {
+     "Allow": {}
+    },
+    "Name": "archrev-cloudfront-acl",
+    "Rules": [
+     {
+      "Action": {
+       "Block": {}
+      },
+      "Name": "RateLimitPerIp",
+      "Priority": 0,
+      "Statement": {
+       "RateBasedStatement": {
+        "AggregateKeyType": "IP",
+        "EvaluationWindowSec": 300,
+        "Limit": 1000
+       }
+      },
+      "VisibilityConfig": {
+       "CloudWatchMetricsEnabled": true,
+       "MetricName": "archrev-cf-rate",
+       "SampledRequestsEnabled": true
+      }
+     },
+     {
+      "Name": "AWSCommon",
+      "OverrideAction": {
+       "None": {}
+      },
+      "Priority": 1,
+      "Statement": {
+       "ManagedRuleGroupStatement": {
+        "Name": "AWSManagedRulesCommonRuleSet",
+        "VendorName": "AWS"
+       }
+      },
+      "VisibilityConfig": {
+       "CloudWatchMetricsEnabled": true,
+       "MetricName": "archrev-cf-common",
+       "SampledRequestsEnabled": true
+      }
+     }
+    ],
+    "Scope": "CLOUDFRONT",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "VisibilityConfig": {
+     "CloudWatchMetricsEnabled": true,
+     "MetricName": "archrev-cf",
+     "SampledRequestsEnabled": true
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevEdge/CloudFrontAcl"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02KPQvCMBQAf0v35FmD0lmyCkIdHOU1fZHX2lTy0Qwh/13EQafjjlOguiO0DeYgzTjLJw9QrhHNLHoKa/KGBOZwL4Z8ZMsGIy3o8EEeiv41oa370yoy2k2Btu5Gw0mf62e4pPhKsQq3jgRT2G3qAPsO2mYKzNInF3kh6L98A3ydf2WaAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevEdge/CDKMetadata/Default"
+   }
+  },
+  "ExportsWriteruswest209BD44F0A7CF058B": {
+   "Type": "Custom::CrossRegionExportWriter",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomCrossRegionExportWriterCustomResourceProviderHandlerD8786E8A",
+      "Arn"
+     ]
+    },
+    "WriterProps": {
+     "region": "us-west-2",
+     "exports": {
+      "/cdk/exports/ArchRevApp/ArchRevEdgeuseast1RefSiteCert6025247CE6D481AD": {
+       "Ref": "SiteCert6025247C"
+      },
+      "/cdk/exports/ArchRevApp/ArchRevEdgeuseast1FnGetAttCloudFrontAclArn51C5176A": {
+       "Fn::GetAtt": [
+        "CloudFrontAcl",
+        "Arn"
+       ]
+      }
+     }
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevEdge/ExportsWriteruswest209BD44F0/Resource/Default"
+   }
+  },
+  "CustomCrossRegionExportWriterCustomResourceProviderRoleC951B1E1": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ],
+    "Policies": [
+     {
+      "PolicyName": "Inline",
+      "PolicyDocument": {
+       "Version": "2012-10-17",
+       "Statement": [
+        {
+         "Effect": "Allow",
+         "Resource": [
+          {
+           "Fn::Join": [
+            "",
+            [
+             "arn:",
+             {
+              "Ref": "AWS::Partition"
+             },
+             ":ssm:us-west-2:154833006816:parameter/cdk/exports/*"
+            ]
+           ]
+          }
+         ],
+         "Action": [
+          "ssm:DeleteParameters",
+          "ssm:ListTagsForResource",
+          "ssm:GetParameters",
+          "ssm:PutParameter"
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevEdge/Custom::CrossRegionExportWriterCustomResourceProvider/Role"
+   }
+  },
+  "CustomCrossRegionExportWriterCustomResourceProviderHandlerD8786E8A": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-archrev-assets-154833006816-us-east-1",
+     "S3Key": "08b23c75a1fe108c9fbd7896f6d7a668289c804be7852d611aecf2a0b501279f.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "__entrypoint__.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomCrossRegionExportWriterCustomResourceProviderRoleC951B1E1",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs24.x"
+   },
+   "DependsOn": [
+    "CustomCrossRegionExportWriterCustomResourceProviderRoleC951B1E1"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevEdge/Custom::CrossRegionExportWriterCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.08b23c75a1fe108c9fbd7896f6d7a668289c804be7852d611aecf2a0b501279f",
+    "aws:asset:property": "Code"
+   }
+  }
+ },
+ "Outputs": {
+  "CertificateArn": {
+   "Value": {
+    "Ref": "SiteCert6025247C"
+   }
+  },
+  "CloudFrontWebAclArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "CloudFrontAcl",
+     "Arn"
+    ]
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/archrev/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

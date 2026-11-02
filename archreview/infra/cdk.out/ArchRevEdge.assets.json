@@ -1,0 +1,36 @@
+{
+  "version": "55.0.0",
+  "files": {
+    "08b23c75a1fe108c9fbd7896f6d7a668289c804be7852d611aecf2a0b501279f": {
+      "displayName": "ArchRevEdge/Custom::CrossRegionExportWriterCustomResourceProvider Code",
+      "source": {
+        "path": "asset.08b23c75a1fe108c9fbd7896f6d7a668289c804be7852d611aecf2a0b501279f",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "154833006816-us-east-1-8d52db22": {
+          "bucketName": "cdk-archrev-assets-154833006816-us-east-1",
+          "objectKey": "08b23c75a1fe108c9fbd7896f6d7a668289c804be7852d611aecf2a0b501279f.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::154833006816:role/cdk-archrev-file-publishing-role-154833006816-us-east-1"
+        }
+      }
+    },
+    "fff00f13886f17bc0933f9ad4ba658ed3664bede4b21c9037d1c4b9694e629f3": {
+      "displayName": "ArchRevEdge Template",
+      "source": {
+        "path": "ArchRevEdge.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "154833006816-us-east-1-3f069e36": {
+          "bucketName": "cdk-archrev-assets-154833006816-us-east-1",
+          "objectKey": "fff00f13886f17bc0933f9ad4ba658ed3664bede4b21c9037d1c4b9694e629f3.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::154833006816:role/cdk-archrev-file-publishing-role-154833006816-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

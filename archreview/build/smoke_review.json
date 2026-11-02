@@ -1,0 +1,1053 @@
+{
+  "review_id": "rv-f4324b3dba524a3a855f",
+  "owner": "smoke04cbfa2e",
+  "created_at": 1793649765,
+  "status": "complete",
+  "correlation_id": "smoke-67d7d825-9764-426b-a190-f9390934a38a",
+  "title": "Customer service GenAI assistant",
+  "error": null,
+  "completed_at": 1793649910,
+  "request": {
+    "title": "Customer service GenAI assistant",
+    "description": "A chatbot on the public website answers product and billing questions by retrieving from internal knowledge articles, and hands off to a human agent when confidence is low. It looks up the customer's open cases in a third-party CRM after the customer signs in. Conversation transcripts are stored for 90 days for quality review. We plan to use Amazon Bedrock for the model and want to launch in one region.",
+    "business_objective": "Reduce call-center volume by 20 percent and improve first-contact resolution.",
+    "data_classification": "confidential",
+    "expected_users": 50000,
+    "availability_target": "99.9",
+    "external_integrations": [
+      "Third-party SaaS CRM (case lookup API)"
+    ]
+  },
+  "result": {
+    "status": "complete",
+    "correlation_id": "smoke-67d7d825-9764-426b-a190-f9390934a38a",
+    "executive_summary": "The proposed Customer Service GenAI Assistant is a public-facing chatbot that uses Amazon Bedrock for generative AI, retrieves from internal knowledge articles via Bedrock Knowledge Bases, integrates with a third-party SaaS CRM for case lookups, stores 90-day conversation transcripts, and hands off to human agents on low-confidence responses. The system handles confidential data for up to 50,000 users at a 99.9% availability target (Tier 2 per STD-DR-001).\n\nThe proposal aligns well with two approved reference patterns (PAT-AI-001 Governed GenAI RAG Assistant and PAT-WEB-001 Serverless Web Application) and the proposed Amazon Bedrock service is catalog-approved (with constraints). The single-region deployment intent is consistent with STD-ARC-002 and the Tier 2 DR posture under STD-DR-001.\n\nHowever, several mandatory controls require explicit design decisions before launch: (1) Bedrock Guardrails and prompt-injection defenses must be configured (CTL-AI-03); (2) a pre-release offline evaluation set is required (CTL-AI-04); (3) the use case must be registered with the Responsible AI Council (CTL-AI-01); (4) a Privacy Impact Assessment is required before production (CTL-PRV-01); (5) a vendor risk assessment and data processing agreement for the third-party CRM must be completed (CTL-TPI-01); (6) CRM API credentials must be stored in AWS Secrets Manager with rotation (CTL-TPI-02); (7) conversation transcripts stored for 90 days create a tension with the 30-day log retention limit for streams that may contain personal data (STD-PRV-002 vs. the proposal's 90-day retention); (8) customer-managed KMS keys are required for all confidential data at rest (CTL-ENC-03); and (9) cross-region backups with annual restore tests are required for Tier 2 (CTL-DR-01). The proposal is approvable with these controls addressed; it is not recommended for launch until they are.",
+    "recommendation": {
+      "verdict": "NEEDS_CHANGES",
+      "rationale": "The architecture is well-aligned with approved patterns and catalog services. Amazon Bedrock (SVC-BEDROCK), AgentCore (SVC-AGENTCORE), and Knowledge Bases (SVC-KB) are all approved_with_constraints for confidential data, and the single-region/multi-AZ posture satisfies Tier 2 DR requirements. However, the following gaps must be resolved before launch: (1) AI governance \u2014 use-case registration with the Responsible AI Council (CTL-AI-01), Bedrock Guardrails configuration for prompt-injection and content filtering (CTL-AI-03), and a pre-release evaluation set (CTL-AI-04) are all mandatory and not addressed in the proposal; (2) Privacy \u2014 a Privacy Impact Assessment (CTL-PRV-01) is required before production processing of personal data, and the proposed 90-day transcript retention conflicts with the 30-day limit for log streams containing personal data (STD-PRV-002/CTL-PRV-03) \u2014 this must be resolved by either classifying transcripts as a distinct data store (not a log stream) with appropriate controls, or reducing retention; (3) Third-party CRM \u2014 a vendor risk assessment and data processing agreement (CTL-TPI-01) and Secrets Manager storage of CRM credentials (CTL-TPI-02) are not mentioned; (4) Encryption \u2014 customer-managed KMS keys with rotation are required for confidential data at rest (CTL-ENC-03); (5) Disaster Recovery \u2014 cross-region backups with RPO 24h/RTO 8h and an annual restore test are required for Tier 2 (CTL-DR-01). None of these are blockers that require architectural redesign; they are implementation and process requirements that must be documented and implemented.",
+      "basis": "model_recommendation"
+    },
+    "architecture": {
+      "summary": "Recommended target architecture follows PAT-AI-001 (Governed GenAI RAG Assistant) composed with PAT-WEB-001 (Serverless Web Application). Static chat UI is served from S3 via CloudFront with WAF. Authenticated users sign in through Cognito (MFA required per CTL-IAM-03). API Gateway (with WAF rate limiting and JWT authorizer) routes requests to an AgentCore-hosted agent. The agent calls Bedrock (with Guardrails enabled) for generation and retrieves from Knowledge Bases for grounding. A Lambda function handles the CRM case-lookup tool call, using credentials from Secrets Manager. Conversation transcripts are stored in S3 (encrypted with customer-managed KMS). CloudWatch and X-Ray provide observability. Cross-region backups satisfy Tier 2 DR. All infrastructure is provisioned via IaC (CTL-ARC-02).",
+      "components": [
+        {
+          "service_id": "SVC-CLOUDFRONT",
+          "name": "Amazon CloudFront",
+          "role": "CDN and HTTPS termination for the public chat UI; enforces TLS 1.2+ (CTL-ENC-01).",
+          "catalog_status": "approved",
+          "constraints_to_apply": [],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-CLOUDFRONT"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-WAF",
+          "name": "AWS WAF",
+          "role": "Rate-based rules and AWS managed common rule set on CloudFront and API Gateway public entry points (CTL-TPI-03).",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "Rate-based rule required on every public entry point.",
+            "AWS managed common rule set enabled."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-WAF"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-S3",
+          "name": "Amazon S3",
+          "role": "Hosts static chat UI assets and stores conversation transcripts (90-day retention, encrypted at rest with customer-managed KMS).",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "Encrypt at rest with customer-managed KMS keys (CTL-ENC-03).",
+            "Apply data classification label to transcript bucket.",
+            "Enable cross-region replication for Tier 2 DR backups (CTL-DR-01)."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-S3"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-COGNITO",
+          "name": "Amazon Cognito",
+          "role": "Customer authentication and session management; MFA required for confidential data access (CTL-IAM-03); session timeout \u226460 min (CTL-IAM-04).",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "Enforce MFA for all authenticated users (CTL-IAM-03).",
+            "Configure session timeout \u226460 minutes (CTL-IAM-04)."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-COGNITO"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-APIGW",
+          "name": "Amazon API Gateway",
+          "role": "Public REST API entry point for chat interactions; JWT authorizer enforces authentication; WAF attached.",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "Attach AWS WAF with rate limiting to public stage.",
+            "Use JWT authorizer; no unauthenticated write routes.",
+            "Enable access logging."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-APIGW"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-AGENTCORE",
+          "name": "Amazon Bedrock AgentCore",
+          "role": "Hosts the conversational agent runtime; orchestrates Bedrock model calls, Knowledge Bases retrieval, and CRM tool calls; manages agent memory.",
+          "catalog_status": "approved_with_constraints",
+          "constraints_to_apply": [
+            "Invoke runtimes with IAM (SigV4) or approved JWT authorizers only.",
+            "Each MCP server deployed as its own runtime.",
+            "Tools must not perform irreversible actions without human approval."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-AGENTCORE"
+          },
+          "cost_band": "$$"
+        },
+        {
+          "service_id": "SVC-BEDROCK",
+          "name": "Amazon Bedrock",
+          "role": "Foundation model inference for answer generation; Bedrock Guardrails enforces prompt-injection detection and content filtering (CTL-AI-03).",
+          "catalog_status": "approved_with_constraints",
+          "constraints_to_apply": [
+            "Register use case with Responsible AI Council before launch (CTL-AI-01).",
+            "Bedrock Guardrails required for user-facing generation (CTL-AI-03).",
+            "Use cross-region inference profiles approved by the AI Platform Team.",
+            "Restricted data requires an approved data-handling review (not applicable here \u2014 data is confidential)."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-BEDROCK"
+          },
+          "cost_band": "$$"
+        },
+        {
+          "service_id": "SVC-KB",
+          "name": "Amazon Bedrock Knowledge Bases",
+          "role": "RAG retrieval over internal knowledge articles; grounds model responses in approved sources (STD-AI-002).",
+          "catalog_status": "approved_with_constraints",
+          "constraints_to_apply": [
+            "Source documents must carry a data classification label.",
+            "Vector store (OpenSearch Serverless) incurs standing monthly cost \u2014 obtain cost approval."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-KB"
+          },
+          "cost_band": "$$$"
+        },
+        {
+          "service_id": "SVC-LAMBDA",
+          "name": "AWS Lambda",
+          "role": "CRM case-lookup tool function; retrieves customer open cases from third-party SaaS CRM API using credentials from Secrets Manager.",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "Use arm64 where possible.",
+            "Set reserved concurrency for public-facing functions.",
+            "Dedicated least-privilege IAM role per CTL-IAM-01."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-LAMBDA"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-SECRETS",
+          "name": "AWS Secrets Manager",
+          "role": "Stores and rotates CRM API credentials (CTL-TPI-02); no long-lived credentials in code or environment variables (CTL-IAM-02).",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "Enable automatic rotation for CRM credentials.",
+            "Access restricted to Lambda CRM tool function role only."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-SECRETS"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-DYNAMODB",
+          "name": "Amazon DynamoDB",
+          "role": "Session state and conversation context store; multi-AZ by default (CTL-ARC-03); point-in-time recovery enabled.",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "On-demand capacity by default.",
+            "Point-in-time recovery required.",
+            "Encrypt with customer-managed KMS key (CTL-ENC-03)."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-DYNAMODB"
+          },
+          "cost_band": "$"
+        },
+        {
+          "service_id": "SVC-CLOUDWATCH",
+          "name": "Amazon CloudWatch and AWS X-Ray",
+          "role": "Structured JSON logs with correlation IDs (CTL-LOG-01); error-rate and latency alarms (CTL-LOG-03); distributed tracing across all service hops (CTL-LOG-03); 400-day audit log retention (CTL-LOG-02).",
+          "catalog_status": "approved",
+          "constraints_to_apply": [
+            "Redact personal data from all log streams before ingestion (CTL-PRV-03).",
+            "Log streams that may contain personal data retained \u226430 days (STD-PRV-002).",
+            "Audit/security logs retained 400 days (CTL-LOG-02).",
+            "Enable distributed tracing with X-Ray across all service boundaries."
+          ],
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "SVC-CLOUDWATCH"
+          },
+          "cost_band": "$"
+        }
+      ],
+      "reference_patterns": [
+        {
+          "pattern_id": "PAT-AI-001",
+          "name": "Governed generative AI assistant (RAG)",
+          "fit": "Direct fit: the proposal is a public-facing RAG chatbot using Bedrock, AgentCore, and Knowledge Bases \u2014 exactly the services and topology described in this pattern. The pattern's advisory-labeling and citation requirements align with CTL-AI-02.",
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "PAT-AI-001"
+          },
+          "status": "approved_with_constraints"
+        },
+        {
+          "pattern_id": "PAT-WEB-001",
+          "name": "Serverless web application",
+          "fit": "Partial fit: the web delivery layer (CloudFront + WAF + S3 static assets + API Gateway + Cognito) maps directly to this pattern. DynamoDB for session state also aligns. The AI agent layer is additive on top of this pattern.",
+          "source": {
+            "server": "approved-service-catalog",
+            "record_id": "PAT-WEB-001"
+          },
+          "status": "approved"
+        }
+      ]
+    },
+    "standards": [
+      {
+        "standard_id": "STD-AI-001",
+        "title": "Human accountability and advisory labeling",
+        "relevance": "Directly applicable: the proposal uses a generative AI model on a public-facing product. Requires use-case registration with the Responsible AI Council, advisory labeling of AI output, and no fully automated decisions affecting customers.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-AI-001"
+        },
+        "category": "ai_governance"
+      },
+      {
+        "standard_id": "STD-AI-002",
+        "title": "Pre-release evaluation",
+        "relevance": "Directly applicable: the chatbot retrieves from internal knowledge articles (grounding requirement) and accepts untrusted user input (prompt-injection defense). Bedrock Guardrails and a pre-release evaluation set are mandatory.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-AI-002"
+        },
+        "category": "ai_governance"
+      },
+      {
+        "standard_id": "STD-ARC-001",
+        "title": "Infrastructure as code",
+        "relevance": "All components must map to approved catalog entries or have a documented exception. All proposed services are catalog-approved (some with constraints).",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-ARC-001"
+        },
+        "category": "architecture"
+      },
+      {
+        "standard_id": "STD-ARC-002",
+        "title": "Single-region multi-AZ by default",
+        "relevance": "Single-region multi-AZ is the default posture. The proposal's single-region intent is consistent with this standard and with the Tier 2 DR posture.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-ARC-002"
+        },
+        "category": "architecture"
+      },
+      {
+        "standard_id": "STD-DR-001",
+        "title": "Multi-region failover for Tier 1",
+        "relevance": "99.9% availability target maps to Tier 2: cross-region backups required with RPO 24h and RTO 8h; annual restore test required. Multi-region active-passive (CTL-DR-02) is only required for Tier 1 (\u226599.95%).",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-DR-001"
+        },
+        "category": "disaster_recovery"
+      },
+      {
+        "standard_id": "STD-ENC-001",
+        "title": "TLS 1.2+ everywhere",
+        "relevance": "All endpoints must enforce TLS 1.2+ with ACM certificates, including the CloudFront distribution, API Gateway, and the CRM integration channel.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-ENC-001"
+        },
+        "category": "encryption"
+      },
+      {
+        "standard_id": "STD-ENC-002",
+        "title": "Customer-managed KMS keys",
+        "relevance": "All data stores (S3 transcript bucket, DynamoDB session store, Knowledge Bases vector store) must be encrypted at rest with customer-managed KMS keys with rotation (confidential classification).",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-ENC-002"
+        },
+        "category": "encryption"
+      },
+      {
+        "standard_id": "STD-IAM-001",
+        "title": "No long-lived credentials",
+        "relevance": "Each component requires a dedicated least-privilege IAM role reviewed with IAM Access Analyzer. No long-lived IAM user keys permitted.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-IAM-001"
+        },
+        "category": "iam"
+      },
+      {
+        "standard_id": "STD-IAM-002",
+        "title": "Workforce and customer authentication",
+        "relevance": "Customers accessing confidential data (their own billing/case data) must authenticate with MFA through Cognito. Session timeout \u226460 minutes.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-IAM-002"
+        },
+        "category": "iam"
+      },
+      {
+        "standard_id": "STD-LOG-001",
+        "title": "400-day audit retention",
+        "relevance": "Structured JSON logs with correlation IDs required across all service hops. Audit logs retained 400 days.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-LOG-001"
+        },
+        "category": "logging"
+      },
+      {
+        "standard_id": "STD-LOG-002",
+        "title": "Monitoring, alarms, and tracing",
+        "relevance": "Error-rate and latency alarms plus distributed tracing (X-Ray) required in production.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-LOG-002"
+        },
+        "category": "logging"
+      },
+      {
+        "standard_id": "STD-PRV-001",
+        "title": "Personal data minimization",
+        "relevance": "The chatbot processes personal data (customer identity, billing questions, case data). A Privacy Impact Assessment must be approved before production launch.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-PRV-001"
+        },
+        "category": "privacy"
+      },
+      {
+        "standard_id": "STD-PRV-002",
+        "title": "Log redaction",
+        "relevance": "Personal data must be redacted from logs. Log streams that may contain personal data are limited to \u226430 days retention. This creates a direct conflict with the proposed 90-day transcript retention (see Conflicts).",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-PRV-002"
+        },
+        "category": "privacy"
+      },
+      {
+        "standard_id": "STD-TPI-001",
+        "title": "Inbound payload validation and rate limiting",
+        "relevance": "The third-party SaaS CRM integration requires a vendor risk assessment, a data processing agreement (confidential data is shared), CRM credentials in Secrets Manager with rotation, and payload validation on the integration endpoint.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-TPI-001"
+        },
+        "category": "third_party"
+      },
+      {
+        "standard_id": "STD-TPI-002",
+        "title": "No plain FTP",
+        "relevance": "File exchange with the CRM must use authenticated APIs or managed SFTP \u2014 no plain FTP. The proposal uses a case lookup API which satisfies this if TLS-authenticated.",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "STD-TPI-002"
+        },
+        "category": "third_party"
+      }
+    ],
+    "risks": [],
+    "controls": [
+      {
+        "control_id": "CTL-AI-01",
+        "title": "AI use-case registration",
+        "how_to_apply": "Register this chatbot use case with the ExampleCo Responsible AI Council before launch. Obtain a registration reference number and include it in the deployment runbook.",
+        "standard_id": "STD-AI-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-AI-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-AI-02",
+        "title": "Human accountability and advisory labeling",
+        "how_to_apply": "Label all AI-generated responses as advisory in the chat UI. Designate a named product owner as the accountable human for decisions. The human-agent handoff mechanism already partially satisfies this.",
+        "standard_id": "STD-AI-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-AI-02"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-AI-03",
+        "title": "Prompt-injection and content filtering",
+        "how_to_apply": "Enable Bedrock Guardrails on the Bedrock model invocation: configure prompt-injection detection on user inputs and retrieved Knowledge Bases content; configure content filters on model outputs. Treat all user-supplied text and CRM-returned data as untrusted.",
+        "standard_id": "STD-AI-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-AI-03"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-AI-04",
+        "title": "Pre-release evaluation",
+        "how_to_apply": "Build and maintain an offline evaluation set covering product/billing question accuracy, refusal behavior, and adversarial prompts. Run and review results before each model or prompt update.",
+        "standard_id": "STD-AI-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-AI-04"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-ARC-01",
+        "title": "Catalog-approved services only",
+        "how_to_apply": "All components listed in the architecture map to approved catalog entries. Confirm no additional components are introduced without catalog approval or a documented exception.",
+        "standard_id": "STD-ARC-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-ARC-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-ARC-02",
+        "title": "Infrastructure as code",
+        "how_to_apply": "Provision all infrastructure (Bedrock Guardrails config, AgentCore runtimes, API Gateway stages, S3 buckets, DynamoDB tables, KMS keys, WAF rules) via version-controlled IaC with peer review.",
+        "standard_id": "STD-ARC-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-ARC-02"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-ARC-03",
+        "title": "Multi-AZ deployment",
+        "how_to_apply": "DynamoDB, Lambda, and API Gateway are inherently multi-AZ. Confirm AgentCore runtimes and any ECS/Fargate components span at least two AZs.",
+        "standard_id": "STD-ARC-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-ARC-03"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-DR-01",
+        "title": "Tier-appropriate backups",
+        "how_to_apply": "Tier 2 requires cross-region backups with RPO 24h and RTO 8h. Enable S3 cross-region replication for the transcript bucket. Enable DynamoDB point-in-time recovery and configure AWS Backup for cross-region copy. Conduct an annual restore test.",
+        "standard_id": "STD-DR-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-DR-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-DR-02",
+        "title": "Multi-region failover for Tier 1",
+        "how_to_apply": "Tier 1 workloads maintain a tested warm standby in a second region.",
+        "standard_id": "STD-DR-001",
+        "required": true,
+        "added_by_validator": true,
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-DR-02"
+        }
+      },
+      {
+        "control_id": "CTL-ENC-01",
+        "title": "TLS 1.2+ everywhere",
+        "how_to_apply": "Enforce TLS 1.2+ on CloudFront (minimum TLS policy), API Gateway, and the outbound CRM API call from Lambda. Use ACM certificates for all ExampleCo-owned endpoints.",
+        "standard_id": "STD-ENC-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-ENC-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-ENC-02",
+        "title": "Encryption at rest",
+        "how_to_apply": "Enable encryption at rest on S3 transcript bucket, DynamoDB session table, and Knowledge Bases vector store (OpenSearch Serverless).",
+        "standard_id": "STD-ENC-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-ENC-02"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-ENC-03",
+        "title": "Customer-managed KMS keys",
+        "how_to_apply": "Use customer-managed KMS keys (not AWS-managed keys) for the S3 transcript bucket, DynamoDB table, and Knowledge Bases vector store. Enable automatic key rotation annually.",
+        "standard_id": "STD-ENC-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-ENC-03"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-IAM-01",
+        "title": "Per-component IAM roles",
+        "how_to_apply": "Create dedicated IAM roles for: AgentCore agent, Lambda CRM tool function, Knowledge Bases data access, S3 transcript writer, and CloudWatch log publisher. Review each with IAM Access Analyzer.",
+        "standard_id": "STD-IAM-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-IAM-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-IAM-02",
+        "title": "No long-lived credentials",
+        "how_to_apply": "All workload components use IAM role temporary credentials. CRM API key stored in Secrets Manager (not in Lambda environment variables or code).",
+        "standard_id": "STD-IAM-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-IAM-02"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-IAM-03",
+        "title": "MFA for sensitive data",
+        "how_to_apply": "Configure Cognito user pool to require MFA (TOTP or SMS) for all authenticated customers before they can access billing or case data.",
+        "standard_id": "STD-IAM-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-IAM-03"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-IAM-04",
+        "title": "Session timeout",
+        "how_to_apply": "Set Cognito session token validity to \u226460 minutes. Implement refresh token rotation.",
+        "standard_id": "STD-IAM-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-IAM-04"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-LOG-01",
+        "title": "Structured logs with correlation IDs",
+        "how_to_apply": "Emit structured JSON logs from API Gateway, AgentCore, Lambda, and Bedrock invocations. Propagate a correlation ID (e.g., conversation ID) across all hops.",
+        "standard_id": "STD-LOG-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-LOG-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-LOG-02",
+        "title": "400-day audit retention",
+        "how_to_apply": "Set CloudWatch log group retention to 400 days for security and audit log groups (API Gateway access logs, CloudTrail). Note: log groups that may contain personal data must be \u226430 days per CTL-PRV-03.",
+        "standard_id": "STD-LOG-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-LOG-02"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-LOG-03",
+        "title": "Alarms and tracing",
+        "how_to_apply": "Create CloudWatch alarms on API Gateway 5xx error rate and p99 latency. Enable X-Ray tracing on Lambda, API Gateway, and AgentCore. Create a dashboard for the on-call team.",
+        "standard_id": "STD-LOG-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-LOG-03"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-PRV-01",
+        "title": "Privacy impact assessment",
+        "how_to_apply": "Complete and obtain Privacy Office approval for a Privacy Impact Assessment before production launch. The PIA must cover: conversation transcript storage, CRM data access, and any data sent to Bedrock.",
+        "standard_id": "STD-PRV-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-PRV-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-PRV-02",
+        "title": "Masked non-production data",
+        "how_to_apply": "Mask or tokenize customer PII (names, account numbers, case IDs) in non-production environments used for development and testing.",
+        "standard_id": "STD-PRV-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-PRV-02"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-PRV-03",
+        "title": "Log redaction",
+        "how_to_apply": "Implement a log sanitization layer that redacts PII (customer name, email, account ID, case content) before writing to CloudWatch. Any log stream that may contain residual personal data must have retention \u226430 days.",
+        "standard_id": "STD-PRV-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-PRV-03"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-TPI-01",
+        "title": "Vendor risk assessment",
+        "how_to_apply": "Complete a vendor risk assessment for the third-party SaaS CRM before production data exchange. Obtain a data processing agreement covering confidential customer data. Document the assessment in the vendor risk register.",
+        "standard_id": "STD-TPI-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-TPI-01"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-TPI-02",
+        "title": "Managed integration secrets",
+        "how_to_apply": "Store the CRM API key/OAuth credentials in AWS Secrets Manager (SVC-SECRETS). Configure automatic rotation. The Lambda CRM tool function retrieves credentials at runtime via IAM role.",
+        "standard_id": "STD-TPI-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-TPI-02"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-TPI-03",
+        "title": "Inbound payload validation and rate limiting",
+        "how_to_apply": "Validate and size-limit all payloads returned from the CRM API before passing to the agent (treat as untrusted per STD-AI-002). Apply WAF rate limiting on the API Gateway stage that proxies CRM lookups.",
+        "standard_id": "STD-TPI-001",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-TPI-03"
+        },
+        "required": true
+      },
+      {
+        "control_id": "CTL-TPI-04",
+        "title": "No plain FTP",
+        "how_to_apply": "The CRM integration uses an authenticated HTTPS API \u2014 this satisfies the no-plain-FTP requirement. Confirm the CRM vendor does not offer or require FTP-based data exchange.",
+        "standard_id": "STD-TPI-002",
+        "source": {
+          "server": "enterprise-standards",
+          "record_id": "CTL-TPI-04"
+        },
+        "required": true
+      }
+    ],
+    "conflicts": [],
+    "open_questions": [],
+    "sources": [
+      {
+        "server": "approved-service-catalog",
+        "tool": "find_reference_pattern",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3109.3,
+        "record_ids": [
+          "PAT-AI-001",
+          "PAT-WEB-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "search_services",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3196.8,
+        "record_ids": [
+          "SVC-AGENTCORE",
+          "SVC-BEDROCK",
+          "SVC-CLOUDFRONT",
+          "SVC-CLOUDWATCH",
+          "SVC-COGNITO",
+          "SVC-FARGATE",
+          "SVC-KB",
+          "SVC-S3"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "search_standards",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3646.7,
+        "record_ids": [
+          "STD-AI-001",
+          "STD-AI-002",
+          "STD-ARC-002",
+          "STD-DR-001",
+          "STD-IAM-002",
+          "STD-LOG-002",
+          "STD-PRV-001",
+          "STD-TPI-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "list_required_controls",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 5274.2,
+        "record_ids": [
+          "CTL-AI-01",
+          "CTL-AI-02",
+          "CTL-AI-03",
+          "CTL-AI-04",
+          "CTL-ARC-01",
+          "CTL-ARC-02",
+          "CTL-ARC-03",
+          "CTL-DR-01",
+          "CTL-DR-02",
+          "CTL-ENC-01",
+          "CTL-ENC-02",
+          "CTL-ENC-03",
+          "CTL-IAM-01",
+          "CTL-IAM-02",
+          "CTL-IAM-03",
+          "CTL-IAM-04",
+          "CTL-LOG-01",
+          "CTL-LOG-02",
+          "CTL-LOG-03",
+          "CTL-PRV-01",
+          "CTL-PRV-02",
+          "CTL-PRV-03",
+          "CTL-TPI-01",
+          "CTL-TPI-02",
+          "CTL-TPI-03",
+          "CTL-TPI-04",
+          "STD-AI-001",
+          "STD-AI-002",
+          "STD-ARC-001",
+          "STD-ARC-002",
+          "STD-DR-001",
+          "STD-ENC-001",
+          "STD-ENC-002",
+          "STD-IAM-001",
+          "STD-IAM-002",
+          "STD-LOG-001",
+          "STD-LOG-002",
+          "STD-PRV-001",
+          "STD-PRV-002",
+          "STD-TPI-001",
+          "STD-TPI-002"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "get_service_profile",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2655.1,
+        "record_ids": [
+          "SVC-BEDROCK"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "get_service_profile",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2596.8,
+        "record_ids": [
+          "SVC-AGENTCORE"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "get_service_profile",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3109.1,
+        "record_ids": [
+          "SVC-KB"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3638.9,
+        "record_ids": [
+          "CTL-AI-01",
+          "CTL-AI-02",
+          "STD-AI-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3124.4,
+        "record_ids": [
+          "CTL-AI-03",
+          "CTL-AI-04",
+          "STD-AI-002"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3085.1,
+        "record_ids": [
+          "CTL-PRV-03",
+          "STD-PRV-002"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "get_service_profile",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2595.4,
+        "record_ids": [
+          "SVC-LAMBDA"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "get_service_profile",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2605.0,
+        "record_ids": [
+          "SVC-APIGW"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "get_service_profile",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3083.6,
+        "record_ids": [
+          "SVC-WAF"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "get_service_profile",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3169.9,
+        "record_ids": [
+          "SVC-DYNAMODB"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3074.0,
+        "record_ids": [
+          "CTL-TPI-01",
+          "CTL-TPI-02",
+          "CTL-TPI-03",
+          "STD-TPI-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2547.3,
+        "record_ids": [
+          "CTL-DR-01",
+          "CTL-DR-02",
+          "STD-DR-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "search_services",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2619.4,
+        "record_ids": [
+          "SVC-BEDROCK",
+          "SVC-S3",
+          "SVC-SECRETS"
+        ],
+        "error": null
+      },
+      {
+        "server": "approved-service-catalog",
+        "tool": "search_services",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3681.6,
+        "record_ids": [
+          "SVC-BEDROCK",
+          "SVC-KB",
+          "SVC-S3"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2541.9,
+        "record_ids": [
+          "CTL-ARC-01",
+          "CTL-ARC-02",
+          "STD-ARC-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3116.2,
+        "record_ids": [
+          "CTL-ENC-01",
+          "STD-ENC-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3096.2,
+        "record_ids": [
+          "CTL-ENC-02",
+          "CTL-ENC-03",
+          "STD-ENC-002"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3629.4,
+        "record_ids": [
+          "CTL-IAM-01",
+          "CTL-IAM-02",
+          "STD-IAM-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 3110.0,
+        "record_ids": [
+          "CTL-LOG-01",
+          "CTL-LOG-02",
+          "STD-LOG-001"
+        ],
+        "error": null
+      },
+      {
+        "server": "enterprise-standards",
+        "tool": "get_standard",
+        "ok": true,
+        "attempts": 1,
+        "duration_ms": 2644.7,
+        "record_ids": [
+          "CTL-TPI-04",
+          "STD-TPI-002"
+        ],
+        "error": null
+      }
+    ],
+    "servers_used": [
+      "approved-service-catalog",
+      "enterprise-standards"
+    ],
+    "derived_context": {
+      "risk_level": "high",
+      "risk_reasons": [
+        "data classification 'confidential' (+2)",
+        "external integrations with confidential/restricted data (+1)"
+      ],
+      "availability_tier": "Tier 2",
+      "basis": "deterministic rules in the review service"
+    },
+    "security_notices": [],
+    "warnings": [],
+    "model_id": "us.anthropic.claude-sonnet-4-6",
+    "llm_turns": 4,
+    "duration_ms": 143548,
+    "disclaimer": "ADVISORY ONLY. This review was generated by an AI assistant using SYNTHETIC demonstration standards and a SYNTHETIC service catalog for a fictional organization. It is not an approval, does not reflect the policies, systems, or approvals of any real company, and must be validated by a qualified human reviewer.",
+    "narrative": "# Solution review: Customer service GenAI assistant\n\n**Status:** complete  \n**Verdict (model recommendation):** NEEDS_CHANGES\n\n## Executive summary\nThe proposed Customer Service GenAI Assistant is a public-facing chatbot that uses Amazon Bedrock for generative AI, retrieves from internal knowledge articles via Bedrock Knowledge Bases, integrates with a third-party SaaS CRM for case lookups, stores 90-day conversation transcripts, and hands off to human agents on low-confidence responses. The system handles confidential data for up to 50,000 users at a 99.9% availability target (Tier 2 per STD-DR-001).\n\nThe proposal aligns well with two approved reference patterns (PAT-AI-001 Governed GenAI RAG Assistant and PAT-WEB-001 Serverless Web Application) and the proposed Amazon Bedrock service is catalog-approved (with constraints). The single-region deployment intent is consistent with STD-ARC-002 and the Tier 2 DR posture under STD-DR-001.\n\nHowever, several mandatory controls require explicit design decisions before launch: (1) Bedrock Guardrails and prompt-injection defenses must be configured (CTL-AI-03); (2) a pre-release offline evaluation set is required (CTL-AI-04); (3) the use case must be registered with the Responsible AI Council (CTL-AI-01); (4) a Privacy Impact Assessment is required before production (CTL-PRV-01); (5) a vendor risk assessment and data processing agreement for the third-party CRM must be completed (CTL-TPI-01); (6) CRM API credentials must be stored in AWS Secrets Manager with rotation (CTL-TPI-02); (7) conversation transcripts stored for 90 days create a tension with the 30-day log retention limit for streams that may contain personal data (STD-PRV-002 vs. the proposal's 90-day retention); (8) customer-managed KMS keys are required for all confidential data at rest (CTL-ENC-03); and (9) cross-region backups with annual restore tests are required for Tier 2 (CTL-DR-01). The proposal is approvable with these controls addressed; it is not recommended for launch until they are.\n\n## Recommendation\nThe architecture is well-aligned with approved patterns and catalog services. Amazon Bedrock (SVC-BEDROCK), AgentCore (SVC-AGENTCORE), and Knowledge Bases (SVC-KB) are all approved\\_with\\_constraints for confidential data, and the single-region/multi-AZ posture satisfies Tier 2 DR requirements. However, the following gaps must be resolved before launch: (1) AI governance \u2014 use-case registration with the Responsible AI Council (CTL-AI-01), Bedrock Guardrails configuration for prompt-injection and content filtering (CTL-AI-03), and a pre-release evaluation set (CTL-AI-04) are all mandatory and not addressed in the proposal; (2) Privacy \u2014 a Privacy Impact Assessment (CTL-PRV-01) is required before production processing of personal data, and the proposed 90-day transcript retention conflicts with the 30-day limit for log streams containing personal data (STD-PRV-002/CTL-PRV-03) \u2014 this must be resolved by either classifying transcripts as a distinct data store (not a log stream) with appropriate controls, or reducing retention; (3) Third-party CRM \u2014 a vendor risk assessment and data processing agreement (CTL-TPI-01) and Secrets Manager storage of CRM credentials (CTL-TPI-02) are not mentioned; (4) Encryption \u2014 customer-managed KMS keys with rotation are required for confidential data at rest (CTL-ENC-03); (5) Disaster Recovery \u2014 cross-region backups with RPO 24h/RTO 8h and an annual restore test are required for Tier 2 (CTL-DR-01). None of these are blockers that require architectural redesign; they are implementation and process requirements that must be documented and implemented.\n\n## Recommended architecture\nRecommended target architecture follows PAT-AI-001 (Governed GenAI RAG Assistant) composed with PAT-WEB-001 (Serverless Web Application). Static chat UI is served from S3 via CloudFront with WAF. Authenticated users sign in through Cognito (MFA required per CTL-IAM-03). API Gateway (with WAF rate limiting and JWT authorizer) routes requests to an AgentCore-hosted agent. The agent calls Bedrock (with Guardrails enabled) for generation and retrieves from Knowledge Bases for grounding. A Lambda function handles the CRM case-lookup tool call, using credentials from Secrets Manager. Conversation transcripts are stored in S3 (encrypted with customer-managed KMS). CloudWatch and X-Ray provide observability. Cross-region backups satisfy Tier 2 DR. All infrastructure is provisioned via IaC (CTL-ARC-02).\n\n- **Amazon CloudFront** (approved): CDN and HTTPS termination for the public chat UI; enforces TLS 1.2+ (CTL-ENC-01). [approved-service-catalog:SVC-CLOUDFRONT]\n- **AWS WAF** (approved): Rate-based rules and AWS managed common rule set on CloudFront and API Gateway public entry points (CTL-TPI-03). [approved-service-catalog:SVC-WAF]\n- **Amazon S3** (approved): Hosts static chat UI assets and stores conversation transcripts (90-day retention, encrypted at rest with customer-managed KMS). [approved-service-catalog:SVC-S3]\n- **Amazon Cognito** (approved): Customer authentication and session management; MFA required for confidential data access (CTL-IAM-03); session timeout \u226460 min (CTL-IAM-04). [approved-service-catalog:SVC-COGNITO]\n- **Amazon API Gateway** (approved): Public REST API entry point for chat interactions; JWT authorizer enforces authentication; WAF attached. [approved-service-catalog:SVC-APIGW]\n- **Amazon Bedrock AgentCore** (approved_with_constraints): Hosts the conversational agent runtime; orchestrates Bedrock model calls, Knowledge Bases retrieval, and CRM tool calls; manages agent memory. [approved-service-catalog:SVC-AGENTCORE]\n- **Amazon Bedrock** (approved_with_constraints): Foundation model inference for answer generation; Bedrock Guardrails enforces prompt-injection detection and content filtering (CTL-AI-03). [approved-service-catalog:SVC-BEDROCK]\n- **Amazon Bedrock Knowledge Bases** (approved_with_constraints): RAG retrieval over internal knowledge articles; grounds model responses in approved sources (STD-AI-002). [approved-service-catalog:SVC-KB]\n- **AWS Lambda** (approved): CRM case-lookup tool function; retrieves customer open cases from third-party SaaS CRM API using credentials from Secrets Manager. [approved-service-catalog:SVC-LAMBDA]\n- **AWS Secrets Manager** (approved): Stores and rotates CRM API credentials (CTL-TPI-02); no long-lived credentials in code or environment variables (CTL-IAM-02). [approved-service-catalog:SVC-SECRETS]\n- **Amazon DynamoDB** (approved): Session state and conversation context store; multi-AZ by default (CTL-ARC-03); point-in-time recovery enabled. [approved-service-catalog:SVC-DYNAMODB]\n- **Amazon CloudWatch and AWS X-Ray** (approved): Structured JSON logs with correlation IDs (CTL-LOG-01); error-rate and latency alarms (CTL-LOG-03); distributed tracing across all service hops (CTL-LOG-03); 400-day audit log retention (CTL-LOG-02). [approved-service-catalog:SVC-CLOUDWATCH]\n- Pattern **Governed generative AI assistant (RAG)**: Direct fit: the proposal is a public-facing RAG chatbot using Bedrock, AgentCore, and Knowledge Bases \u2014 exactly the services and topology described in this pattern. The pattern's advisory-labeling and citation requirements align with CTL-AI-02. [approved-service-catalog:PAT-AI-001]\n- Pattern **Serverless web application**: Partial fit: the web delivery layer (CloudFront + WAF + S3 static assets + API Gateway + Cognito) maps directly to this pattern. DynamoDB for session state also aligns. The AI agent layer is additive on top of this pattern. [approved-service-catalog:PAT-WEB-001]\n\n## Applicable standards\n- **STD-AI-001 Human accountability and advisory labeling**: Directly applicable: the proposal uses a generative AI model on a public-facing product. Requires use-case registration with the Responsible AI Council, advisory labeling of AI output, and no fully automated decisions affecting customers. [enterprise-standards:STD-AI-001]\n- **STD-AI-002 Pre-release evaluation**: Directly applicable: the chatbot retrieves from internal knowledge articles (grounding requirement) and accepts untrusted user input (prompt-injection defense). Bedrock Guardrails and a pre-release evaluation set are mandatory. [enterprise-standards:STD-AI-002]\n- **STD-ARC-001 Infrastructure as code**: All components must map to approved catalog entries or have a documented exception. All proposed services are catalog-approved (some with constraints). [enterprise-standards:STD-ARC-001]\n- **STD-ARC-002 Single-region multi-AZ by default**: Single-region multi-AZ is the default posture. The proposal's single-region intent is consistent with this standard and with the Tier 2 DR posture. [enterprise-standards:STD-ARC-002]\n- **STD-DR-001 Multi-region failover for Tier 1**: 99.9% availability target maps to Tier 2: cross-region backups required with RPO 24h and RTO 8h; annual restore test required. Multi-region active-passive (CTL-DR-02) is only required for Tier 1 (\u226599.95%). [enterprise-standards:STD-DR-001]\n- **STD-ENC-001 TLS 1.2+ everywhere**: All endpoints must enforce TLS 1.2+ with ACM certificates, including the CloudFront distribution, API Gateway, and the CRM integration channel. [enterprise-standards:STD-ENC-001]\n- **STD-ENC-002 Customer-managed KMS keys**: All data stores (S3 transcript bucket, DynamoDB session store, Knowledge Bases vector store) must be encrypted at rest with customer-managed KMS keys with rotation (confidential classification). [enterprise-standards:STD-ENC-002]\n- **STD-IAM-001 No long-lived credentials**: Each component requires a dedicated least-privilege IAM role reviewed with IAM Access Analyzer. No long-lived IAM user keys permitted. [enterprise-standards:STD-IAM-001]\n- **STD-IAM-002 Workforce and customer authentication**: Customers accessing confidential data (their own billing/case data) must authenticate with MFA through Cognito. Session timeout \u226460 minutes. [enterprise-standards:STD-IAM-002]\n- **STD-LOG-001 400-day audit retention**: Structured JSON logs with correlation IDs required across all service hops. Audit logs retained 400 days. [enterprise-standards:STD-LOG-001]\n- **STD-LOG-002 Monitoring, alarms, and tracing**: Error-rate and latency alarms plus distributed tracing (X-Ray) required in production. [enterprise-standards:STD-LOG-002]\n- **STD-PRV-001 Personal data minimization**: The chatbot processes personal data (customer identity, billing questions, case data). A Privacy Impact Assessment must be approved before production launch. [enterprise-standards:STD-PRV-001]\n- **STD-PRV-002 Log redaction**: Personal data must be redacted from logs. Log streams that may contain personal data are limited to \u226430 days retention. This creates a direct conflict with the proposed 90-day transcript retention (see Conflicts). [enterprise-standards:STD-PRV-002]\n- **STD-TPI-001 Inbound payload validation and rate limiting**: The third-party SaaS CRM integration requires a vendor risk assessment, a data processing agreement (confidential data is shared), CRM credentials in Secrets Manager with rotation, and payload validation on the integration endpoint. [enterprise-standards:STD-TPI-001]\n- **STD-TPI-002 No plain FTP**: File exchange with the CRM must use authenticated APIs or managed SFTP \u2014 no plain FTP. The proposal uses a case lookup API which satisfies this if TLS-authenticated. [enterprise-standards:STD-TPI-002]\n\n## Risks\n\n## Required controls\n- **CTL-AI-01 AI use-case registration** (required): Register this chatbot use case with the ExampleCo Responsible AI Council before launch. Obtain a registration reference number and include it in the deployment runbook. [enterprise-standards:CTL-AI-01]\n- **CTL-AI-02 Human accountability and advisory labeling** (required): Label all AI-generated responses as advisory in the chat UI. Designate a named product owner as the accountable human for decisions. The human-agent handoff mechanism already partially satisfies this. [enterprise-standards:CTL-AI-02]\n- **CTL-AI-03 Prompt-injection and content filtering** (required): Enable Bedrock Guardrails on the Bedrock model invocation: configure prompt-injection detection on user inputs and retrieved Knowledge Bases content; configure content filters on model outputs. Treat all user-supplied text and CRM-returned data as untrusted. [enterprise-standards:CTL-AI-03]\n- **CTL-AI-04 Pre-release evaluation** (required): Build and maintain an offline evaluation set covering product/billing question accuracy, refusal behavior, and adversarial prompts. Run and review results before each model or prompt update. [enterprise-standards:CTL-AI-04]\n- **CTL-ARC-01 Catalog-approved services only** (required): All components listed in the architecture map to approved catalog entries. Confirm no additional components are introduced without catalog approval or a documented exception. [enterprise-standards:CTL-ARC-01]\n- **CTL-ARC-02 Infrastructure as code** (required): Provision all infrastructure (Bedrock Guardrails config, AgentCore runtimes, API Gateway stages, S3 buckets, DynamoDB tables, KMS keys, WAF rules) via version-controlled IaC with peer review. [enterprise-standards:CTL-ARC-02]\n- **CTL-ARC-03 Multi-AZ deployment** (required): DynamoDB, Lambda, and API Gateway are inherently multi-AZ. Confirm AgentCore runtimes and any ECS/Fargate components span at least two AZs. [enterprise-standards:CTL-ARC-03]\n- **CTL-DR-01 Tier-appropriate backups** (required): Tier 2 requires cross-region backups with RPO 24h and RTO 8h. Enable S3 cross-region replication for the transcript bucket. Enable DynamoDB point-in-time recovery and configure AWS Backup for cross-region copy. Conduct an annual restore test. [enterprise-standards:CTL-DR-01]\n- **CTL-DR-02 Multi-region failover for Tier 1** (required): Tier 1 workloads maintain a tested warm standby in a second region. [enterprise-standards:CTL-DR-02]\n- **CTL-ENC-01 TLS 1.2+ everywhere** (required): Enforce TLS 1.2+ on CloudFront (minimum TLS policy), API Gateway, and the outbound CRM API call from Lambda. Use ACM certificates for all ExampleCo-owned endpoints. [enterprise-standards:CTL-ENC-01]\n- **CTL-ENC-02 Encryption at rest** (required): Enable encryption at rest on S3 transcript bucket, DynamoDB session table, and Knowledge Bases vector store (OpenSearch Serverless). [enterprise-standards:CTL-ENC-02]\n- **CTL-ENC-03 Customer-managed KMS keys** (required): Use customer-managed KMS keys (not AWS-managed keys) for the S3 transcript bucket, DynamoDB table, and Knowledge Bases vector store. Enable automatic key rotation annually. [enterprise-standards:CTL-ENC-03]\n- **CTL-IAM-01 Per-component IAM roles** (required): Create dedicated IAM roles for: AgentCore agent, Lambda CRM tool function, Knowledge Bases data access, S3 transcript writer, and CloudWatch log publisher. Review each with IAM Access Analyzer. [enterprise-standards:CTL-IAM-01]\n- **CTL-IAM-02 No long-lived credentials** (required): All workload components use IAM role temporary credentials. CRM API key stored in Secrets Manager (not in Lambda environment variables or code). [enterprise-standards:CTL-IAM-02]\n- **CTL-IAM-03 MFA for sensitive data** (required): Configure Cognito user pool to require MFA (TOTP or SMS) for all authenticated customers before they can access billing or case data. [enterprise-standards:CTL-IAM-03]\n- **CTL-IAM-04 Session timeout** (required): Set Cognito session token validity to \u226460 minutes. Implement refresh token rotation. [enterprise-standards:CTL-IAM-04]\n- **CTL-LOG-01 Structured logs with correlation IDs** (required): Emit structured JSON logs from API Gateway, AgentCore, Lambda, and Bedrock invocations. Propagate a correlation ID (e.g., conversation ID) across all hops. [enterprise-standards:CTL-LOG-01]\n- **CTL-LOG-02 400-day audit retention** (required): Set CloudWatch log group retention to 400 days for security and audit log groups (API Gateway access logs, CloudTrail). Note: log groups that may contain personal data must be \u226430 days per CTL-PRV-03. [enterprise-standards:CTL-LOG-02]\n- **CTL-LOG-03 Alarms and tracing** (required): Create CloudWatch alarms on API Gateway 5xx error rate and p99 latency. Enable X-Ray tracing on Lambda, API Gateway, and AgentCore. Create a dashboard for the on-call team. [enterprise-standards:CTL-LOG-03]\n- **CTL-PRV-01 Privacy impact assessment** (required): Complete and obtain Privacy Office approval for a Privacy Impact Assessment before production launch. The PIA must cover: conversation transcript storage, CRM data access, and any data sent to Bedrock. [enterprise-standards:CTL-PRV-01]\n- **CTL-PRV-02 Masked non-production data** (required): Mask or tokenize customer PII (names, account numbers, case IDs) in non-production environments used for development and testing. [enterprise-standards:CTL-PRV-02]\n- **CTL-PRV-03 Log redaction** (required): Implement a log sanitization layer that redacts PII (customer name, email, account ID, case content) before writing to CloudWatch. Any log stream that may contain residual personal data must have retention \u226430 days. [enterprise-standards:CTL-PRV-03]\n- **CTL-TPI-01 Vendor risk assessment** (required): Complete a vendor risk assessment for the third-party SaaS CRM before production data exchange. Obtain a data processing agreement covering confidential customer data. Document the assessment in the vendor risk register. [enterprise-standards:CTL-TPI-01]\n- **CTL-TPI-02 Managed integration secrets** (required): Store the CRM API key/OAuth credentials in AWS Secrets Manager (SVC-SECRETS). Configure automatic rotation. The Lambda CRM tool function retrieves credentials at runtime via IAM role. [enterprise-standards:CTL-TPI-02]\n- **CTL-TPI-03 Inbound payload validation and rate limiting** (required): Validate and size-limit all payloads returned from the CRM API before passing to the agent (treat as untrusted per STD-AI-002). Apply WAF rate limiting on the API Gateway stage that proxies CRM lookups. [enterprise-standards:CTL-TPI-03]\n- **CTL-TPI-04 No plain FTP** (required): The CRM integration uses an authenticated HTTPS API \u2014 this satisfies the no-plain-FTP requirement. Confirm the CRM vendor does not offer or require FTP-based data exchange. [enterprise-standards:CTL-TPI-04]\n\n## Open questions\n\n## Sources\nServers used: approved-service-catalog, enterprise-standards\n- approved-service-catalog / find_reference_pattern: PAT-AI-001, PAT-WEB-001\n- approved-service-catalog / search_services: SVC-AGENTCORE, SVC-BEDROCK, SVC-CLOUDFRONT, SVC-CLOUDWATCH, SVC-COGNITO, SVC-FARGATE, SVC-KB, SVC-S3\n- enterprise-standards / search_standards: STD-AI-001, STD-AI-002, STD-ARC-002, STD-DR-001, STD-IAM-002, STD-LOG-002, STD-PRV-001, STD-TPI-001\n- enterprise-standards / list_required_controls: CTL-AI-01, CTL-AI-02, CTL-AI-03, CTL-AI-04, CTL-ARC-01, CTL-ARC-02, CTL-ARC-03, CTL-DR-01, CTL-DR-02, CTL-ENC-01, CTL-ENC-02, CTL-ENC-03, CTL-IAM-01, CTL-IAM-02, CTL-IAM-03, CTL-IAM-04, CTL-LOG-01, CTL-LOG-02, CTL-LOG-03, CTL-PRV-01, CTL-PRV-02, CTL-PRV-03, CTL-TPI-01, CTL-TPI-02, CTL-TPI-03, CTL-TPI-04, STD-AI-001, STD-AI-002, STD-ARC-001, STD-ARC-002, STD-DR-001, STD-ENC-001, STD-ENC-002, STD-IAM-001, STD-IAM-002, STD-LOG-001, STD-LOG-002, STD-PRV-001, STD-PRV-002, STD-TPI-001, STD-TPI-002\n- approved-service-catalog / get_service_profile: SVC-BEDROCK\n- approved-service-catalog / get_service_profile: SVC-AGENTCORE\n- approved-service-catalog / get_service_profile: SVC-KB\n- enterprise-standards / get_standard: CTL-AI-01, CTL-AI-02, STD-AI-001\n- enterprise-standards / get_standard: CTL-AI-03, CTL-AI-04, STD-AI-002\n- enterprise-standards / get_standard: CTL-PRV-03, STD-PRV-002\n- approved-service-catalog / get_service_profile: SVC-LAMBDA\n- approved-service-catalog / get_service_profile: SVC-APIGW\n- approved-service-catalog / get_service_profile: SVC-WAF\n- approved-service-catalog / get_service_profile: SVC-DYNAMODB\n- enterprise-standards / get_standard: CTL-TPI-01, CTL-TPI-02, CTL-TPI-03, STD-TPI-001\n- enterprise-standards / get_standard: CTL-DR-01, CTL-DR-02, STD-DR-001\n- approved-service-catalog / search_services: SVC-BEDROCK, SVC-S3, SVC-SECRETS\n- approved-service-catalog / search_services: SVC-BEDROCK, SVC-KB, SVC-S3\n- enterprise-standards / get_standard: CTL-ARC-01, CTL-ARC-02, STD-ARC-001\n- enterprise-standards / get_standard: CTL-ENC-01, STD-ENC-001\n- enterprise-standards / get_standard: CTL-ENC-02, CTL-ENC-03, STD-ENC-002\n- enterprise-standards / get_standard: CTL-IAM-01, CTL-IAM-02, STD-IAM-001\n- enterprise-standards / get_standard: CTL-LOG-01, CTL-LOG-02, STD-LOG-001\n- enterprise-standards / get_standard: CTL-TPI-04, STD-TPI-002\n\n_ADVISORY ONLY. This review was generated by an AI assistant using SYNTHETIC demonstration standards and a SYNTHETIC service catalog for a fictional organization. It is not an approval, does not reflect the policies, systems, or approvals of any real company, and must be validated by a qualified human reviewer._"
+  }
+}

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solution Review Assistant</title>
+  <meta name="description" content="AI-assisted enterprise solution review using two MCP servers. Synthetic demonstration data.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="banner" role="note">
+    <strong>Synthetic demonstration data.</strong>
+    Standards, catalog entries, and approvals belong to a fictional organization (ExampleCo). Results are advisory only.
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7"/><path d="M10 17l4 4 8-10"/></svg>
+      <div>
+        <h1>Enterprise Solution Review Assistant</h1>
+        <p class="sub">An AI agent that checks your proposal against an Enterprise Standards MCP server and an Approved Service Catalog MCP server</p>
+      </div>
+    </div>
+    <nav class="toplinks">
+      <a class="btn ghost" href="projectknowledge.md" download="projectknowledge.md" id="dl-knowledge">Download projectknowledge.md</a>
+      <span id="user-chip" class="chip hidden"></span>
+      <button id="signout" class="btn ghost hidden" type="button">Sign out</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ================= AUTH ================= -->
+    <section id="auth" class="card auth hidden" aria-labelledby="auth-title">
+      <h2 id="auth-title">Sign in to start a review</h2>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-login" aria-selected="true" class="tab active" type="button">Sign in</button>
+        <button role="tab" id="tab-register" aria-selected="false" class="tab" type="button">Register</button>
+      </div>
+
+      <form id="login-form" novalidate>
+        <label>User ID <input name="username" autocomplete="username" required minlength="3" maxlength="32"></label>
+        <label>Password <input name="password" type="password" autocomplete="current-password" required minlength="6" maxlength="64"></label>
+        <button class="btn primary" type="submit">Sign in</button>
+        <p class="form-msg" aria-live="polite"></p>
+      </form>
+
+      <form id="register-form" class="hidden" novalidate>
+        <p class="hint">Create your own user ID. No email is needed, and the password only has to be 6 or more characters.</p>
+        <label>User ID <input name="username" autocomplete="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9_.\-]+" placeholder="e.g. student07">
+          <small>3-32 characters: letters, numbers, . _ -</small></label>
+        <label>Password <input name="password" type="password" autocomplete="new-password" required minlength="6" maxlength="64">
+          <small>At least 6 characters. No complexity rules.</small></label>
+        <fieldset class="roles">
+          <legend>Which type of user is this ID?</legend>
+          <label class="role"><input type="radio" name="role" value="architect" checked>
+            <span><b>Solution Architect</b><br><small>Submits proposals and sees their own reviews.</small></span></label>
+          <label class="role"><input type="radio" name="role" value="governance">
+            <span><b>Governance Reviewer</b><br><small>Submits proposals and can also see every user's reviews.</small></span></label>
+        </fieldset>
+        <button class="btn primary" type="submit">Create user and sign in</button>
+        <p class="form-msg" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- ================= APP ================= -->
+    <div id="app" class="layout hidden">
+      <section class="card" aria-labelledby="form-title">
+        <div class="card-head">
+          <h2 id="form-title">Proposed solution</h2>
+          <div class="examples">
+            <label class="sr-only" for="example-select">Example</label>
+            <select id="example-select"></select>
+            <button id="load-example" class="btn ghost" type="button">Load example</button>
+          </div>
+        </div>
+        <form id="review-form" novalidate>
+          <label>Proposal title <input name="title" required minlength="3" maxlength="120" placeholder="e.g. Customer service GenAI assistant">
+            <span class="err" data-for="title"></span></label>
+          <label>Description <textarea name="description" rows="7" required minlength="40" maxlength="4000" placeholder="What will be built, which components, what data flows where, and who uses it."></textarea>
+            <span class="counter" data-for="description"></span><span class="err" data-for="description"></span></label>
+          <label>Business objective <textarea name="business_objective" rows="2" required minlength="10" maxlength="1000"></textarea>
+            <span class="err" data-for="business_objective"></span></label>
+          <div class="grid3">
+            <label>Data classification
+              <select name="data_classification" required>
+                <option value="">Select...</option>
+                <option value="public">Public</option>
+                <option value="internal">Internal</option>
+                <option value="confidential">Confidential</option>
+                <option value="restricted">Restricted</option>
+              </select><span class="err" data-for="data_classification"></span></label>
+            <label>Expected users <input name="expected_users" type="number" min="1" max="10000000" step="1" required placeholder="e.g. 5000">
+              <span class="err" data-for="expected_users"></span></label>
+            <label>Availability target
+              <select name="availability_target" required>
+                <option value="">Select...</option>
+                <option value="99.0">99.0%</option>
+                <option value="99.5">99.5%</option>
+                <option value="99.9">99.9%</option>
+                <option value="99.95">99.95%</option>
+                <option value="99.99">99.99%</option>
+              </select><span class="err" data-for="availability_target"></span></label>
+          </div>
+          <label>External integrations <small>(one per line, up to 10)</small>
+            <textarea name="external_integrations" rows="3" placeholder="e.g. Third-party CRM API"></textarea>
+            <span class="err" data-for="external_integrations"></span></label>
+          <div class="actions">
+            <button id="submit-btn" class="btn primary" type="submit">Submit for review</button>
+            <button id="clear-btn" class="btn ghost" type="button">Clear</button>
+          </div>
+          <p class="form-msg" id="review-msg" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card results" aria-labelledby="results-title" aria-live="polite">
+        <div class="card-head">
+          <h2 id="results-title">Review results</h2>
+          <div class="result-actions hidden" id="result-actions">
+            <button class="btn ghost" id="dl-md" type="button">Narrative (.md)</button>
+            <button class="btn ghost" id="dl-json" type="button">Structured (.json)</button>
+          </div>
+        </div>
+        <div id="state-empty" class="state">
+          <div class="empty-art" aria-hidden="true"></div>
+          <p><b>No review yet.</b> Describe a proposal, or load an example, then select <i>Submit for review</i>.</p>
+          <p class="hint">Each review asks both MCP servers, cites every record it uses, and drops any claim it cannot verify.</p>
+        </div>
+        <div id="state-loading" class="state hidden">
+          <div class="spinner" aria-hidden="true"></div>
+          <p id="loading-text"><b>Reviewing...</b></p>
+          <ol class="steps" id="steps">
+            <li data-step="queued">Queued</li>
+            <li data-step="running">Consulting Enterprise Standards and Approved Service Catalog MCP servers</li>
+            <li data-step="model">Agent analyzing and validating citations</li>
+          </ol>
+          <p class="hint">Reviews usually take 1 to 3 minutes. <span id="elapsed"></span></p>
+        </div>
+        <div id="state-error" class="state error hidden" role="alert"></div>
+        <div id="result" class="hidden"></div>
+      </section>
+
+      <section class="card history" aria-labelledby="hist-title">
+        <div class="card-head">
+          <h2 id="hist-title">Review history</h2>
+          <div>
+            <select id="hist-scope" aria-label="History scope">
+              <option value="mine">My reviews</option>
+              <option value="all" class="gov-only">All users (governance)</option>
+            </select>
+            <button class="btn ghost" id="hist-refresh" type="button">Refresh</button>
+          </div>
+        </div>
+        <ul id="hist-list" class="hist-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>Demonstration application. All standards, catalog records, owners, and approvals are fictional and do not reflect any real company.
+      AI output is advisory and must be validated by a qualified human.</p>
+  </footer>
+  <script src="app.js" defer></script>
+</body>
+</html>

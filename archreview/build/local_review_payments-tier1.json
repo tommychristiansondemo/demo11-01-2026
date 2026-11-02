@@ -1,0 +1,1032 @@
+{
+  "status": "complete",
+  "correlation_id": "cr-local-0001",
+  "executive_summary": "The Partner Payments Status API proposal is a public-facing, restricted-data, Tier 1 (99.99% availability) system handling payment instructions and settlement status for ~400 partner firms. The design concept is sound \u2014 API Gateway \u2192 queue \u2192 processor \u2192 relational database with event publishing \u2014 and maps well to the approved PAT-INT-001 Partner API Integration reference pattern. However, the proposal has three blocking issues that must be resolved before approval:\n\n1. **Plain FTP is prohibited.** The nightly partner file arrives over FTP, which violates STD-TPI-002 (CTL-TPI-04). The SVC-LEGACY-FTP catalog entry is retired and cannot be used. AWS Transfer Family (SVC-TRANSFER, SFTP-only) is the approved replacement.\n\n2. **Multi-region failover is mandatory, not optional.** A 99.99% availability target classifies this as Tier 1 under STD-DR-001, which mandates a tested warm standby in a second region (RPO 15 min, RTO 1 h, DR tests twice per year). Operations' preference for a lowest-cost single-region design directly conflicts with this binding standard. The Aurora catalog profile also explicitly requires Aurora Global Database for Tier 1. The team must either accept multi-region costs or formally request an exception from the Resilience Office.\n\n3. **API key authentication is insufficient.** The proposal states partners authenticate with API keys today. SVC-APIGW's catalog constraints require JWT or IAM authorizers on all write routes; plain API keys do not satisfy this or the broader STD-IAM-001/STD-IAM-002 requirements for restricted data. A migration to JWT-based or mutual-TLS partner authentication is required.\n\nAdditionally, the required controls list includes AI governance controls (CTL-AI-01 through CTL-AI-04) which appear inapplicable to this non-AI proposal \u2014 this should be confirmed and documented. The verdict is NEEDS_CHANGES: the proposal may proceed to detailed design once the three blocking issues above are addressed and the open questions resolved.",
+  "recommendation": {
+    "verdict": "NEEDS_CHANGES",
+    "rationale": "Three blocking issues prevent approval: (1) Plain FTP is prohibited by STD-TPI-002/CTL-TPI-04 and SVC-LEGACY-FTP is retired \u2014 the nightly file integration must migrate to AWS Transfer Family (SVC-TRANSFER, SFTP). (2) The 99.99% availability target mandates Tier 1 multi-region active-passive failover per STD-DR-001/CTL-DR-02 and the SVC-AURORA catalog constraint requiring Aurora Global Database for Tier 1; Operations' single-region cost preference cannot override this binding standard without a formal exception from the Resilience Office. (3) Partner API key authentication does not satisfy SVC-APIGW's catalog constraint (JWT or IAM authorizers required on write routes) nor STD-IAM-001's prohibition on long-lived credentials for workloads; a migration to JWT or mutual-TLS is required. Once these three issues are resolved and open questions answered, the proposal is architecturally coherent and aligns with PAT-INT-001.",
+    "basis": "model_recommendation"
+  },
+  "architecture": {
+    "summary": "The proposed architecture follows the approved PAT-INT-001 Partner API Integration pattern: partner REST calls enter through API Gateway (SVC-APIGW) protected by WAF (SVC-WAF), are validated by Lambda (SVC-LAMBDA), queued in SQS (SVC-SQS), processed by a Lambda processor that writes to Aurora PostgreSQL (SVC-AURORA), and publishes settlement events to EventBridge (SVC-EVENTBRIDGE). Partner credentials are stored in Secrets Manager (SVC-SECRETS). Encryption uses customer-managed KMS keys (SVC-KMS). The nightly FTP file must be replaced with AWS Transfer Family SFTP (SVC-TRANSFER). For Tier 1 compliance, Aurora must be deployed as Aurora Global Database with a warm standby region. SVC-LEGACY-FTP is retired and must not be used.",
+    "components": [
+      {
+        "service_id": "SVC-APIGW",
+        "name": "Amazon API Gateway",
+        "role": "Public-facing REST API entry point for partner payment instruction submission and settlement status queries.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Attach AWS WAF with rate-based rules to all public stages.",
+          "Use JWT or IAM authorizers on all write routes \u2014 no plain API key authentication.",
+          "Enable access logging with correlation IDs."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-APIGW"
+        },
+        "cost_band": "$"
+      },
+      {
+        "service_id": "SVC-WAF",
+        "name": "AWS WAF",
+        "role": "Web application firewall protecting the API Gateway public endpoint with rate limiting and managed rule sets.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Rate-based rule required on every public entry point.",
+          "AWS managed common rule set enabled."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-WAF"
+        },
+        "cost_band": "$"
+      },
+      {
+        "service_id": "SVC-LAMBDA",
+        "name": "AWS Lambda",
+        "role": "Payload validation, business logic processing, and payment instruction processor. Also handles SFTP file ingestion trigger.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Use arm64 where possible.",
+          "Set reserved concurrency for public-facing functions.",
+          "Timeout <= 15 minutes.",
+          "Dedicated least-privilege IAM role per function (CTL-IAM-01)."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-LAMBDA"
+        },
+        "cost_band": "$"
+      },
+      {
+        "service_id": "SVC-SQS",
+        "name": "Amazon SQS",
+        "role": "Message queue decoupling API validation from payment processing, buffering bursts from partner traffic.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Dead-letter queue required for failed payment instructions.",
+          "SSE enabled with customer-managed KMS key (CTL-ENC-03)."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-SQS"
+        },
+        "cost_band": "$"
+      },
+      {
+        "service_id": "SVC-AURORA",
+        "name": "Amazon Aurora PostgreSQL",
+        "role": "Primary relational database storing payment instructions and settlement status records.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Multi-AZ required in primary region.",
+          "Aurora Global Database required for Tier 1 availability (warm standby in second region).",
+          "IAM database authentication preferred.",
+          "Customer-managed KMS key for encryption at rest (CTL-ENC-03)."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-AURORA"
+        },
+        "cost_band": "$$$"
+      },
+      {
+        "service_id": "SVC-EVENTBRIDGE",
+        "name": "Amazon EventBridge",
+        "role": "Publishes settlement status events for downstream consumers and partner notification workflows.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Register all event schemas in the enterprise schema registry."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-EVENTBRIDGE"
+        },
+        "cost_band": "$"
+      },
+      {
+        "service_id": "SVC-TRANSFER",
+        "name": "AWS Transfer Family (SFTP)",
+        "role": "Replaces the prohibited plain FTP channel for the nightly partner file ingestion. Provides managed SFTP endpoint.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "SFTP only \u2014 FTP and FTPS must be disabled.",
+          "Key-based authentication configured per partner.",
+          "Coordinate partner migration from FTP to SFTP before go-live."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-TRANSFER"
+        },
+        "cost_band": "$$"
+      },
+      {
+        "service_id": "SVC-SECRETS",
+        "name": "AWS Secrets Manager",
+        "role": "Stores and rotates partner API credentials, payment gateway credentials, and database passwords.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Rotation enabled for all third-party credentials (CTL-TPI-02)."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-SECRETS"
+        },
+        "cost_band": "$"
+      },
+      {
+        "service_id": "SVC-KMS",
+        "name": "AWS KMS",
+        "role": "Provides customer-managed encryption keys for Aurora, SQS, and any S3 buckets used in the solution.",
+        "catalog_status": "approved",
+        "constraints_to_apply": [
+          "Customer-managed keys required for all restricted data stores.",
+          "Automatic rotation enabled.",
+          "Key policies scoped to this workload only."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-KMS"
+        },
+        "cost_band": "$"
+      },
+      {
+        "service_id": "SVC-LEGACY-FTP",
+        "name": "Legacy FTP Gateway",
+        "role": "MUST NOT BE USED. This service is retired in the catalog and plain FTP is prohibited by STD-TPI-002. Replace with SVC-TRANSFER.",
+        "catalog_status": "retired",
+        "constraints_to_apply": [
+          "Do not use \u2014 retired service.",
+          "Migrate nightly FTP partner to AWS Transfer Family (SVC-TRANSFER) before production launch."
+        ],
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-LEGACY-FTP"
+        },
+        "cost_band": "$"
+      }
+    ],
+    "reference_patterns": [
+      {
+        "pattern_id": "PAT-INT-001",
+        "name": "Partner API integration",
+        "fit": "Strong fit. The proposal's core flow (API Gateway + WAF + Lambda validation + queue + event publishing + Secrets Manager) directly matches this pattern. The pattern is single-region multi-AZ; this proposal must extend it to multi-region per STD-DR-001 Tier 1 requirements. The FTP file ingestion is outside the pattern scope and is addressed by SVC-TRANSFER.",
+        "source": {
+          "server": "approved-service-catalog",
+          "record_id": "PAT-INT-001"
+        },
+        "status": "approved"
+      }
+    ]
+  },
+  "standards": [
+    {
+      "standard_id": "STD-TPI-002",
+      "title": "Legacy file transfer retirement",
+      "relevance": "Prohibits plain FTP and unauthenticated file drops. The nightly partner FTP integration directly violates this standard; managed SFTP (SVC-TRANSFER) is required.",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "STD-TPI-002"
+      },
+      "category": "third_party"
+    },
+    {
+      "standard_id": "STD-DR-001",
+      "title": "Multi-region failover for Tier 1",
+      "relevance": "Classifies this workload as Tier 1 (\u226599.95% target). Mandates multi-region active-passive recovery with RPO 15 min and RTO 1 h, tested twice per year. Directly conflicts with Operations' single-region cost preference.",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "STD-DR-001"
+      },
+      "category": "disaster_recovery"
+    },
+    {
+      "standard_id": "STD-TPI-001",
+      "title": "Inbound payload validation and rate limiting",
+      "relevance": "Requires vendor risk assessments for all three external integrations (partner REST, FTP partner, payment network gateway), credentials in Secrets Manager with rotation, and inbound payload validation with WAF rate limiting.",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "STD-TPI-001"
+      },
+      "category": "third_party"
+    },
+    {
+      "standard_id": "STD-IAM-001",
+      "title": "No long-lived credentials",
+      "relevance": "Prohibits long-lived credentials for workloads. Each component needs a dedicated least-privilege IAM role. The current API key authentication model for partners must be reviewed against this standard.",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "STD-IAM-001"
+      },
+      "category": "iam"
+    },
+    {
+      "standard_id": "STD-IAM-002",
+      "title": "Session timeout",
+      "relevance": "Requires MFA and 60-minute session timeouts for access to restricted data. Partner-facing API authentication must satisfy this for any human-operated partner sessions.",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "STD-IAM-002"
+      },
+      "category": "iam"
+    },
+    {
+      "standard_id": "STD-ENC-002",
+      "title": "Encryption at rest with managed keys",
+      "relevance": "Restricted data requires customer-managed KMS keys with annual rotation and key policies scoped to the owning workload. Applies to Aurora, SQS, and any other data stores.",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "STD-ENC-002"
+      },
+      "category": "encryption"
+    },
+    {
+      "standard_id": "STD-ARC-002",
+      "title": "Multi-AZ deployment",
+      "relevance": "Default single-region multi-AZ posture \u2014 but its own text states this is overridden when STD-DR-001 requires multi-region. For this Tier 1 workload, multi-region is required.",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "STD-ARC-002"
+      },
+      "category": "architecture"
+    }
+  ],
+  "risks": [
+    {
+      "category": "resiliency",
+      "severity": "critical",
+      "description": "Operations' preference for a lowest-cost single-region design is incompatible with the 99.99% availability target. STD-DR-001 mandates Tier 1 multi-region active-passive failover (RPO 15 min, RTO 1 h). A single-region deployment cannot meet this standard or the stated availability SLA.",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "enterprise-standards",
+          "record_id": "STD-DR-001"
+        },
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-DR-02"
+        }
+      ]
+    },
+    {
+      "category": "security",
+      "severity": "high",
+      "description": "Plain FTP is in active use for the nightly partner file. STD-TPI-002 prohibits plain FTP and unauthenticated file drops. SVC-LEGACY-FTP is retired in the catalog and cannot be used. Restricted payment data transmitted over FTP is unencrypted in transit.",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "enterprise-standards",
+          "record_id": "STD-TPI-002"
+        },
+        {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-LEGACY-FTP"
+        }
+      ]
+    },
+    {
+      "category": "security",
+      "severity": "high",
+      "description": "Partner authentication via API keys alone does not satisfy SVC-APIGW's catalog constraint requiring JWT or IAM authorizers on write routes, nor STD-IAM-001's prohibition on long-lived credentials for workloads. API keys are long-lived static secrets and are insufficient for restricted-data access.",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-APIGW"
+        },
+        {
+          "server": "enterprise-standards",
+          "record_id": "STD-IAM-001"
+        }
+      ]
+    },
+    {
+      "category": "compliance",
+      "severity": "high",
+      "description": "No Privacy Impact Assessment is mentioned in the proposal. CTL-PRV-01 requires a PIA approved before production processing of personal data. Payment instructions almost certainly contain personal data (account numbers, beneficiary names).",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-PRV-01"
+        }
+      ]
+    },
+    {
+      "category": "security",
+      "severity": "medium",
+      "description": "The proposal does not mention WAF protection on the public API. SVC-APIGW's catalog constraint and CTL-TPI-03 both require WAF with rate-based rules on all public entry points. Without WAF, the API is exposed to abuse, DDoS, and injection attacks.",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-APIGW"
+        },
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-TPI-03"
+        }
+      ]
+    },
+    {
+      "category": "compliance",
+      "severity": "medium",
+      "description": "Log retention conflict: CTL-LOG-02 requires 400-day audit log retention, while CTL-PRV-03 limits residual personal data in logs to \u226430 days. Payment logs will likely contain personal data. Without careful log stream separation and redaction, one control will be violated.",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-LOG-02"
+        },
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-PRV-03"
+        }
+      ]
+    },
+    {
+      "category": "operational",
+      "severity": "medium",
+      "description": "The proposal does not specify a dead-letter queue strategy for the message queue. SVC-SQS catalog constraints require a dead-letter queue. Without it, failed payment instructions could be silently dropped, causing settlement discrepancies.",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "approved-service-catalog",
+          "record_id": "SVC-SQS"
+        }
+      ]
+    },
+    {
+      "category": "security",
+      "severity": "medium",
+      "description": "Vendor risk assessments are not mentioned for any of the three external integrations (partner firms, FTP partner, payment network gateway). CTL-TPI-01 requires completed assessments before production data exchange with restricted data.",
+      "basis": "retrieved_fact",
+      "sources": [
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-TPI-01"
+        }
+      ]
+    },
+    {
+      "category": "cost",
+      "severity": "medium",
+      "description": "Meeting the 99.99% availability target requires Aurora Global Database, multi-region Lambda/API Gateway deployment, and bi-annual DR tests \u2014 significantly higher cost than the single-region design Operations prefers. This tension must be resolved at the business level.",
+      "basis": "model_recommendation",
+      "sources": []
+    }
+  ],
+  "controls": [
+    {
+      "control_id": "CTL-AI-01",
+      "title": "AI use-case registration",
+      "how_to_apply": "Use case registered with the Responsible AI Council before launch.",
+      "standard_id": "STD-AI-001",
+      "required": true,
+      "added_by_validator": true,
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-AI-01"
+      }
+    },
+    {
+      "control_id": "CTL-AI-02",
+      "title": "Human accountability and advisory labeling",
+      "how_to_apply": "AI output labeled advisory; a named human owns decisions.",
+      "standard_id": "STD-AI-001",
+      "required": true,
+      "added_by_validator": true,
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-AI-02"
+      }
+    },
+    {
+      "control_id": "CTL-AI-03",
+      "title": "Prompt-injection and content filtering",
+      "how_to_apply": "Injection detection on inputs and retrieved content; guardrail filtering on outputs.",
+      "standard_id": "STD-AI-002",
+      "required": true,
+      "added_by_validator": true,
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-AI-03"
+      }
+    },
+    {
+      "control_id": "CTL-AI-04",
+      "title": "Pre-release evaluation",
+      "how_to_apply": "Offline evaluation set run and reviewed before each release.",
+      "standard_id": "STD-AI-002",
+      "required": true,
+      "added_by_validator": true,
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-AI-04"
+      }
+    },
+    {
+      "control_id": "CTL-ARC-01",
+      "title": "Catalog-approved services only",
+      "how_to_apply": "Every component in the final design must map to an approved catalog entry. SVC-LEGACY-FTP is retired and must not appear. All proposed services (SVC-APIGW, SVC-WAF, SVC-SQS, SVC-LAMBDA, SVC-AURORA, SVC-EVENTBRIDGE, SVC-TRANSFER, SVC-SECRETS, SVC-KMS) are approved.",
+      "standard_id": "STD-ARC-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-ARC-01"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-ARC-02",
+      "title": "Infrastructure as code",
+      "how_to_apply": "All environments (dev, staging, production, DR standby) must be provisioned from version-controlled IaC with peer review. No manual console provisioning.",
+      "standard_id": "STD-ARC-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-ARC-02"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-ARC-03",
+      "title": "Multi-AZ deployment",
+      "how_to_apply": "All stateful tiers (Aurora, SQS) and compute (Lambda) must span at least two AZs in the primary region. Aurora Multi-AZ is required in addition to Global Database.",
+      "standard_id": "STD-ARC-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-ARC-03"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-DR-01",
+      "title": "Tier-appropriate backups",
+      "how_to_apply": "Configure automated Aurora backups meeting Tier 1 RPO (15 min). Perform and document restore tests on the schedule required by STD-DR-001.",
+      "standard_id": "STD-DR-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-DR-01"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-DR-02",
+      "title": "Multi-region failover for Tier 1",
+      "how_to_apply": "Deploy Aurora Global Database (per SVC-AURORA Tier 1 constraint) with a warm standby in a second region. Configure RPO \u226415 min and RTO \u22641 h. Schedule DR failover tests twice per year.",
+      "standard_id": "STD-DR-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-DR-02"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-ENC-01",
+      "title": "TLS 1.2+ everywhere",
+      "how_to_apply": "Enforce TLS 1.2+ on all endpoints: API Gateway, Transfer Family SFTP endpoint, payment network gateway connection, and any internal service-to-service calls. Use ACM certificates.",
+      "standard_id": "STD-ENC-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-ENC-01"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-ENC-02",
+      "title": "Encryption at rest",
+      "how_to_apply": "Enable encryption at rest on Aurora (KMS), SQS (SSE \u2014 required by SVC-SQS catalog constraint), and any S3 buckets used for SFTP landing or event archival.",
+      "standard_id": "STD-ENC-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-ENC-02"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-ENC-03",
+      "title": "Customer-managed KMS keys",
+      "how_to_apply": "Use customer-managed KMS keys (SVC-KMS) for Aurora, SQS, and any other restricted data stores. Enable automatic key rotation. Scope key policies to this workload only (per SVC-KMS and STD-ENC-002 constraints).",
+      "standard_id": "STD-ENC-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-ENC-03"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-IAM-01",
+      "title": "Per-component IAM roles",
+      "how_to_apply": "Create a dedicated IAM role for each component: API Gateway execution role, Lambda processor role, Aurora access role, EventBridge publisher role, Transfer Family role. Review each with IAM Access Analyzer. No wildcard actions on data-plane resources.",
+      "standard_id": "STD-IAM-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-IAM-01"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-IAM-02",
+      "title": "No long-lived credentials",
+      "how_to_apply": "All workload components use temporary role credentials via IAM roles. No IAM user access keys in application code or configuration. Partner API keys (external credentials) must be stored in Secrets Manager, not hardcoded.",
+      "standard_id": "STD-IAM-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-IAM-02"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-IAM-03",
+      "title": "MFA for sensitive data",
+      "how_to_apply": "Any human operator or partner user accessing restricted settlement data must authenticate with MFA through an approved identity provider. Confirm whether partner API access is machine-to-machine (MFA may not apply) or human-operated (MFA required).",
+      "standard_id": "STD-IAM-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-IAM-03"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-IAM-04",
+      "title": "Session timeout",
+      "how_to_apply": "Interactive sessions for restricted data must expire within 60 minutes. Apply to any partner portal or internal operations console.",
+      "standard_id": "STD-IAM-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-IAM-04"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-LOG-01",
+      "title": "Structured logs with correlation IDs",
+      "how_to_apply": "Emit structured JSON logs with a correlation ID propagated across API Gateway, Lambda, SQS, and EventBridge hops. Include payment instruction IDs as correlation context.",
+      "standard_id": "STD-LOG-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-LOG-01"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-LOG-02",
+      "title": "400-day audit retention",
+      "how_to_apply": "Retain security and audit logs for 400 days. Configure CloudWatch log group retention policies and/or archive to S3 with lifecycle rules.",
+      "standard_id": "STD-LOG-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-LOG-02"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-LOG-03",
+      "title": "Alarms and tracing",
+      "how_to_apply": "Configure CloudWatch alarms on API error rates, Lambda error rates, SQS dead-letter queue depth, and Aurora replication lag. Enable X-Ray distributed tracing across Lambda and API Gateway.",
+      "standard_id": "STD-LOG-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-LOG-03"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-PRV-01",
+      "title": "Privacy impact assessment",
+      "how_to_apply": "Complete a Privacy Impact Assessment before production launch. Payment instructions likely contain personal data (account numbers, beneficiary names). PIA must be approved before go-live.",
+      "standard_id": "STD-PRV-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-PRV-01"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-PRV-02",
+      "title": "Masked non-production data",
+      "how_to_apply": "Mask or tokenize payment account numbers and personal identifiers in non-production environments (dev, staging). Do not copy production payment data to lower environments.",
+      "standard_id": "STD-PRV-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-PRV-02"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-PRV-03",
+      "title": "Log redaction",
+      "how_to_apply": "Redact account numbers, beneficiary names, and other personal data from all log streams. Any residual personal data in logs must be in streams retained \u226430 days (note conflict with CTL-LOG-02 400-day audit retention \u2014 see conflicts section).",
+      "standard_id": "STD-PRV-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-PRV-03"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-TPI-01",
+      "title": "Vendor risk assessment",
+      "how_to_apply": "Complete vendor risk assessments for all three external integrations before production: partner firms (REST), the legacy FTP partner (migrating to SFTP), and the payment network gateway. Obtain data processing agreements for restricted data.",
+      "standard_id": "STD-TPI-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-TPI-01"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-TPI-02",
+      "title": "Managed integration secrets",
+      "how_to_apply": "Store all partner API keys and payment gateway credentials in AWS Secrets Manager (SVC-SECRETS) with rotation enabled (per SVC-SECRETS catalog constraint).",
+      "standard_id": "STD-TPI-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-TPI-02"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-TPI-03",
+      "title": "Inbound payload validation and rate limiting",
+      "how_to_apply": "Attach AWS WAF (SVC-WAF) to API Gateway with rate-based rules and the AWS managed common rule set (per SVC-WAF catalog constraints). Implement JSON schema validation in Lambda for all inbound payment instruction payloads. Enforce request size limits.",
+      "standard_id": "STD-TPI-001",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-TPI-03"
+      },
+      "required": true
+    },
+    {
+      "control_id": "CTL-TPI-04",
+      "title": "No plain FTP",
+      "how_to_apply": "Replace the nightly FTP integration with AWS Transfer Family (SVC-TRANSFER). Disable FTP and FTPS on the Transfer Family endpoint; enforce SFTP with key-based authentication per partner (per SVC-TRANSFER catalog constraint).",
+      "standard_id": "STD-TPI-002",
+      "source": {
+        "server": "enterprise-standards",
+        "record_id": "CTL-TPI-04"
+      },
+      "required": true
+    }
+  ],
+  "conflicts": [
+    {
+      "description": "Single-region cost preference vs. mandatory multi-region failover: Operations requires the lowest-cost single-region design, but STD-DR-001 (CTL-DR-02) mandates a tested warm standby in a second region for all Tier 1 workloads (\u226599.95% availability). STD-ARC-002 defaults to single-region but explicitly defers to STD-DR-001 when multi-region is required. The 99.99% target unambiguously triggers Tier 1. These cannot both be satisfied without a formal exception.",
+      "sources": [
+        {
+          "server": "enterprise-standards",
+          "record_id": "STD-DR-001"
+        },
+        {
+          "server": "enterprise-standards",
+          "record_id": "STD-ARC-002"
+        },
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-DR-02"
+        }
+      ],
+      "suggested_resolution": "The business must choose: (a) accept multi-region costs to meet the 99.99% SLA and STD-DR-001, using Aurora Global Database and a warm standby region; or (b) lower the availability target to below 99.95% (Tier 2/3), which allows single-region but requires renegotiating the partner SLA. If (a), Operations should seek cost optimization within the multi-region design (e.g., minimal standby capacity). A formal exception from the Resilience Office is required if any deviation from CTL-DR-02 is pursued."
+    },
+    {
+      "description": "Log retention vs. privacy redaction: CTL-LOG-02 requires security and audit logs to be retained for 400 days. CTL-PRV-03 requires personal data to be redacted from logs and limits residual personal data in log streams to \u226430 days. Payment instruction logs will likely contain personal data (account numbers, beneficiary names), creating a direct conflict between these two controls.",
+      "sources": [
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-LOG-02"
+        },
+        {
+          "server": "enterprise-standards",
+          "record_id": "CTL-PRV-03"
+        }
+      ],
+      "suggested_resolution": "Implement two separate log streams: (1) a fully redacted audit log stream retained for 400 days (satisfying CTL-LOG-02), containing correlation IDs, status codes, and non-personal metadata; and (2) a detailed diagnostic stream containing personal data, retained for \u226430 days (satisfying CTL-PRV-03). Redaction must occur at the Lambda/processor layer before emission to the long-retention stream. Confirm approach with Privacy and Security teams during PIA."
+    }
+  ],
+  "open_questions": [],
+  "sources": [
+    {
+      "server": "enterprise-standards",
+      "tool": "list_required_controls",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 650.6,
+      "record_ids": [
+        "CTL-AI-01",
+        "CTL-AI-02",
+        "CTL-AI-03",
+        "CTL-AI-04",
+        "CTL-ARC-01",
+        "CTL-ARC-02",
+        "CTL-ARC-03",
+        "CTL-DR-01",
+        "CTL-DR-02",
+        "CTL-ENC-01",
+        "CTL-ENC-02",
+        "CTL-ENC-03",
+        "CTL-IAM-01",
+        "CTL-IAM-02",
+        "CTL-IAM-03",
+        "CTL-IAM-04",
+        "CTL-LOG-01",
+        "CTL-LOG-02",
+        "CTL-LOG-03",
+        "CTL-PRV-01",
+        "CTL-PRV-02",
+        "CTL-PRV-03",
+        "CTL-TPI-01",
+        "CTL-TPI-02",
+        "CTL-TPI-03",
+        "CTL-TPI-04",
+        "STD-AI-001",
+        "STD-AI-002",
+        "STD-ARC-001",
+        "STD-ARC-002",
+        "STD-DR-001",
+        "STD-ENC-001",
+        "STD-ENC-002",
+        "STD-IAM-001",
+        "STD-IAM-002",
+        "STD-LOG-001",
+        "STD-LOG-002",
+        "STD-PRV-001",
+        "STD-PRV-002",
+        "STD-TPI-001",
+        "STD-TPI-002"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "find_reference_pattern",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 94.4,
+      "record_ids": [
+        "PAT-AI-001",
+        "PAT-DATA-001",
+        "PAT-INT-001"
+      ],
+      "error": null
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "search_standards",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 175.6,
+      "record_ids": [
+        "STD-AI-001",
+        "STD-AI-002",
+        "STD-ARC-002",
+        "STD-DR-001",
+        "STD-ENC-002",
+        "STD-IAM-002",
+        "STD-TPI-001",
+        "STD-TPI-002"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "search_services",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 138.1,
+      "record_ids": [
+        "SVC-AGENTCORE",
+        "SVC-APIGW",
+        "SVC-AURORA",
+        "SVC-EVENTBRIDGE",
+        "SVC-LAMBDA",
+        "SVC-LEGACY-FTP",
+        "SVC-SECRETS",
+        "SVC-TRANSFER"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 79.9,
+      "record_ids": [
+        "SVC-APIGW"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 87.6,
+      "record_ids": [
+        "SVC-AURORA"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 67.6,
+      "record_ids": [
+        "SVC-TRANSFER"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 78.6,
+      "record_ids": [
+        "SVC-LAMBDA"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "search_services",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 69.9,
+      "record_ids": [
+        "SVC-LAMBDA",
+        "SVC-SQS",
+        "SVC-STEPFN"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "search_services",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 76.9,
+      "record_ids": [
+        "SVC-APIGW",
+        "SVC-CLOUDFRONT",
+        "SVC-WAF"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 72.2,
+      "record_ids": [
+        "SVC-SQS"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 71.6,
+      "record_ids": [
+        "SVC-WAF"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 67.7,
+      "record_ids": [
+        "SVC-SECRETS"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 72.5,
+      "record_ids": [
+        "SVC-EVENTBRIDGE"
+      ],
+      "error": null
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "get_standard",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 68.2,
+      "record_ids": [
+        "CTL-DR-01",
+        "CTL-DR-02",
+        "STD-DR-001"
+      ],
+      "error": null
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "get_standard",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 72.4,
+      "record_ids": [
+        "CTL-IAM-01",
+        "CTL-IAM-02",
+        "STD-IAM-001"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "search_services",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 69.6,
+      "record_ids": [
+        "SVC-COGNITO",
+        "SVC-KMS",
+        "SVC-SECRETS"
+      ],
+      "error": null
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "get_standard",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 71.0,
+      "record_ids": [
+        "CTL-IAM-03",
+        "CTL-IAM-04",
+        "STD-IAM-002"
+      ],
+      "error": null
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "get_standard",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 82.5,
+      "record_ids": [
+        "CTL-TPI-01",
+        "CTL-TPI-02",
+        "CTL-TPI-03",
+        "STD-TPI-001"
+      ],
+      "error": null
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 72.2,
+      "record_ids": [
+        "SVC-KMS"
+      ],
+      "error": null
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "get_standard",
+      "ok": true,
+      "attempts": 1,
+      "duration_ms": 69.2,
+      "record_ids": [
+        "CTL-ARC-03",
+        "STD-ARC-002"
+      ],
+      "error": null
+    }
+  ],
+  "servers_used": [
+    "approved-service-catalog",
+    "enterprise-standards"
+  ],
+  "derived_context": {
+    "risk_level": "critical",
+    "risk_reasons": [
+      "data classification 'restricted' (+3)",
+      "availability target 99.99% is Tier 1 (+1)",
+      "external integrations with confidential/restricted data (+1)"
+    ],
+    "availability_tier": "Tier 1",
+    "basis": "deterministic rules in the review service"
+  },
+  "security_notices": [],
+  "warnings": [],
+  "model_id": "us.anthropic.claude-sonnet-4-6",
+  "llm_turns": 5,
+  "duration_ms": 88774,
+  "disclaimer": "ADVISORY ONLY. This review was generated by an AI assistant using SYNTHETIC demonstration standards and a SYNTHETIC service catalog for a fictional organization. It is not an approval, does not reflect the policies, systems, or approvals of any real company, and must be validated by a qualified human reviewer.",
+  "narrative": "# Solution review: Partner payments status API\n\n**Status:** complete  \n**Verdict (model recommendation):** NEEDS_CHANGES\n\n## Executive summary\nThe Partner Payments Status API proposal is a public-facing, restricted-data, Tier 1 (99.99% availability) system handling payment instructions and settlement status for ~400 partner firms. The design concept is sound \u2014 API Gateway \u2192 queue \u2192 processor \u2192 relational database with event publishing \u2014 and maps well to the approved PAT-INT-001 Partner API Integration reference pattern. However, the proposal has three blocking issues that must be resolved before approval:\n\n1. \\*\\*Plain FTP is prohibited.\\*\\* The nightly partner file arrives over FTP, which violates STD-TPI-002 (CTL-TPI-04). The SVC-LEGACY-FTP catalog entry is retired and cannot be used. AWS Transfer Family (SVC-TRANSFER, SFTP-only) is the approved replacement.\n\n2. \\*\\*Multi-region failover is mandatory, not optional.\\*\\* A 99.99% availability target classifies this as Tier 1 under STD-DR-001, which mandates a tested warm standby in a second region (RPO 15 min, RTO 1 h, DR tests twice per year). Operations' preference for a lowest-cost single-region design directly conflicts with this binding standard. The Aurora catalog profile also explicitly requires Aurora Global Database for Tier 1. The team must either accept multi-region costs or formally request an exception from the Resilience Office.\n\n3. \\*\\*API key authentication is insufficient.\\*\\* The proposal states partners authenticate with API keys today. SVC-APIGW's catalog constraints require JWT or IAM authorizers on all write routes; plain API keys do not satisfy this or the broader STD-IAM-001/STD-IAM-002 requirements for restricted data. A migration to JWT-based or mutual-TLS partner authentication is required.\n\nAdditionally, the required controls list includes AI governance controls (CTL-AI-01 through CTL-AI-04) which appear inapplicable to this non-AI proposal \u2014 this should be confirmed and documented. The verdict is NEEDS\\_CHANGES: the proposal may proceed to detailed design once the three blocking issues above are addressed and the open questions resolved.\n\n## Recommendation\nThree blocking issues prevent approval: (1) Plain FTP is prohibited by STD-TPI-002/CTL-TPI-04 and SVC-LEGACY-FTP is retired \u2014 the nightly file integration must migrate to AWS Transfer Family (SVC-TRANSFER, SFTP). (2) The 99.99% availability target mandates Tier 1 multi-region active-passive failover per STD-DR-001/CTL-DR-02 and the SVC-AURORA catalog constraint requiring Aurora Global Database for Tier 1; Operations' single-region cost preference cannot override this binding standard without a formal exception from the Resilience Office. (3) Partner API key authentication does not satisfy SVC-APIGW's catalog constraint (JWT or IAM authorizers required on write routes) nor STD-IAM-001's prohibition on long-lived credentials for workloads; a migration to JWT or mutual-TLS is required. Once these three issues are resolved and open questions answered, the proposal is architecturally coherent and aligns with PAT-INT-001.\n\n## Recommended architecture\nThe proposed architecture follows the approved PAT-INT-001 Partner API Integration pattern: partner REST calls enter through API Gateway (SVC-APIGW) protected by WAF (SVC-WAF), are validated by Lambda (SVC-LAMBDA), queued in SQS (SVC-SQS), processed by a Lambda processor that writes to Aurora PostgreSQL (SVC-AURORA), and publishes settlement events to EventBridge (SVC-EVENTBRIDGE). Partner credentials are stored in Secrets Manager (SVC-SECRETS). Encryption uses customer-managed KMS keys (SVC-KMS). The nightly FTP file must be replaced with AWS Transfer Family SFTP (SVC-TRANSFER). For Tier 1 compliance, Aurora must be deployed as Aurora Global Database with a warm standby region. SVC-LEGACY-FTP is retired and must not be used.\n\n- **Amazon API Gateway** (approved): Public-facing REST API entry point for partner payment instruction submission and settlement status queries. [approved-service-catalog:SVC-APIGW]\n- **AWS WAF** (approved): Web application firewall protecting the API Gateway public endpoint with rate limiting and managed rule sets. [approved-service-catalog:SVC-WAF]\n- **AWS Lambda** (approved): Payload validation, business logic processing, and payment instruction processor. Also handles SFTP file ingestion trigger. [approved-service-catalog:SVC-LAMBDA]\n- **Amazon SQS** (approved): Message queue decoupling API validation from payment processing, buffering bursts from partner traffic. [approved-service-catalog:SVC-SQS]\n- **Amazon Aurora PostgreSQL** (approved): Primary relational database storing payment instructions and settlement status records. [approved-service-catalog:SVC-AURORA]\n- **Amazon EventBridge** (approved): Publishes settlement status events for downstream consumers and partner notification workflows. [approved-service-catalog:SVC-EVENTBRIDGE]\n- **AWS Transfer Family (SFTP)** (approved): Replaces the prohibited plain FTP channel for the nightly partner file ingestion. Provides managed SFTP endpoint. [approved-service-catalog:SVC-TRANSFER]\n- **AWS Secrets Manager** (approved): Stores and rotates partner API credentials, payment gateway credentials, and database passwords. [approved-service-catalog:SVC-SECRETS]\n- **AWS KMS** (approved): Provides customer-managed encryption keys for Aurora, SQS, and any S3 buckets used in the solution. [approved-service-catalog:SVC-KMS]\n- **Legacy FTP Gateway** (retired): MUST NOT BE USED. This service is retired in the catalog and plain FTP is prohibited by STD-TPI-002. Replace with SVC-TRANSFER. [approved-service-catalog:SVC-LEGACY-FTP]\n- Pattern **Partner API integration**: Strong fit. The proposal's core flow (API Gateway + WAF + Lambda validation + queue + event publishing + Secrets Manager) directly matches this pattern. The pattern is single-region multi-AZ; this proposal must extend it to multi-region per STD-DR-001 Tier 1 requirements. The FTP file ingestion is outside the pattern scope and is addressed by SVC-TRANSFER. [approved-service-catalog:PAT-INT-001]\n\n## Applicable standards\n- **STD-TPI-002 Legacy file transfer retirement**: Prohibits plain FTP and unauthenticated file drops. The nightly partner FTP integration directly violates this standard; managed SFTP (SVC-TRANSFER) is required. [enterprise-standards:STD-TPI-002]\n- **STD-DR-001 Multi-region failover for Tier 1**: Classifies this workload as Tier 1 (\u226599.95% target). Mandates multi-region active-passive recovery with RPO 15 min and RTO 1 h, tested twice per year. Directly conflicts with Operations' single-region cost preference. [enterprise-standards:STD-DR-001]\n- **STD-TPI-001 Inbound payload validation and rate limiting**: Requires vendor risk assessments for all three external integrations (partner REST, FTP partner, payment network gateway), credentials in Secrets Manager with rotation, and inbound payload validation with WAF rate limiting. [enterprise-standards:STD-TPI-001]\n- **STD-IAM-001 No long-lived credentials**: Prohibits long-lived credentials for workloads. Each component needs a dedicated least-privilege IAM role. The current API key authentication model for partners must be reviewed against this standard. [enterprise-standards:STD-IAM-001]\n- **STD-IAM-002 Session timeout**: Requires MFA and 60-minute session timeouts for access to restricted data. Partner-facing API authentication must satisfy this for any human-operated partner sessions. [enterprise-standards:STD-IAM-002]\n- **STD-ENC-002 Encryption at rest with managed keys**: Restricted data requires customer-managed KMS keys with annual rotation and key policies scoped to the owning workload. Applies to Aurora, SQS, and any other data stores. [enterprise-standards:STD-ENC-002]\n- **STD-ARC-002 Multi-AZ deployment**: Default single-region multi-AZ posture \u2014 but its own text states this is overridden when STD-DR-001 requires multi-region. For this Tier 1 workload, multi-region is required. [enterprise-standards:STD-ARC-002]\n\n## Risks\n- [CRITICAL / resiliency / retrieved_fact] Operations' preference for a lowest-cost single-region design is incompatible with the 99.99% availability target. STD-DR-001 mandates Tier 1 multi-region active-passive failover (RPO 15 min, RTO 1 h). A single-region deployment cannot meet this standard or the stated availability SLA. [enterprise-standards:STD-DR-001] [enterprise-standards:CTL-DR-02]\n- [HIGH / security / retrieved_fact] Plain FTP is in active use for the nightly partner file. STD-TPI-002 prohibits plain FTP and unauthenticated file drops. SVC-LEGACY-FTP is retired in the catalog and cannot be used. Restricted payment data transmitted over FTP is unencrypted in transit. [enterprise-standards:STD-TPI-002] [approved-service-catalog:SVC-LEGACY-FTP]\n- [HIGH / security / retrieved_fact] Partner authentication via API keys alone does not satisfy SVC-APIGW's catalog constraint requiring JWT or IAM authorizers on write routes, nor STD-IAM-001's prohibition on long-lived credentials for workloads. API keys are long-lived static secrets and are insufficient for restricted-data access. [approved-service-catalog:SVC-APIGW] [enterprise-standards:STD-IAM-001]\n- [HIGH / compliance / retrieved_fact] No Privacy Impact Assessment is mentioned in the proposal. CTL-PRV-01 requires a PIA approved before production processing of personal data. Payment instructions almost certainly contain personal data (account numbers, beneficiary names). [enterprise-standards:CTL-PRV-01]\n- [MEDIUM / security / retrieved_fact] The proposal does not mention WAF protection on the public API. SVC-APIGW's catalog constraint and CTL-TPI-03 both require WAF with rate-based rules on all public entry points. Without WAF, the API is exposed to abuse, DDoS, and injection attacks. [approved-service-catalog:SVC-APIGW] [enterprise-standards:CTL-TPI-03]\n- [MEDIUM / compliance / retrieved_fact] Log retention conflict: CTL-LOG-02 requires 400-day audit log retention, while CTL-PRV-03 limits residual personal data in logs to \u226430 days. Payment logs will likely contain personal data. Without careful log stream separation and redaction, one control will be violated. [enterprise-standards:CTL-LOG-02] [enterprise-standards:CTL-PRV-03]\n- [MEDIUM / operational / retrieved_fact] The proposal does not specify a dead-letter queue strategy for the message queue. SVC-SQS catalog constraints require a dead-letter queue. Without it, failed payment instructions could be silently dropped, causing settlement discrepancies. [approved-service-catalog:SVC-SQS]\n- [MEDIUM / security / retrieved_fact] Vendor risk assessments are not mentioned for any of the three external integrations (partner firms, FTP partner, payment network gateway). CTL-TPI-01 requires completed assessments before production data exchange with restricted data. [enterprise-standards:CTL-TPI-01]\n- [MEDIUM / cost / model_recommendation] Meeting the 99.99% availability target requires Aurora Global Database, multi-region Lambda/API Gateway deployment, and bi-annual DR tests \u2014 significantly higher cost than the single-region design Operations prefers. This tension must be resolved at the business level.\n\n## Required controls\n- **CTL-AI-01 AI use-case registration** (required): Use case registered with the Responsible AI Council before launch. [enterprise-standards:CTL-AI-01]\n- **CTL-AI-02 Human accountability and advisory labeling** (required): AI output labeled advisory; a named human owns decisions. [enterprise-standards:CTL-AI-02]\n- **CTL-AI-03 Prompt-injection and content filtering** (required): Injection detection on inputs and retrieved content; guardrail filtering on outputs. [enterprise-standards:CTL-AI-03]\n- **CTL-AI-04 Pre-release evaluation** (required): Offline evaluation set run and reviewed before each release. [enterprise-standards:CTL-AI-04]\n- **CTL-ARC-01 Catalog-approved services only** (required): Every component in the final design must map to an approved catalog entry. SVC-LEGACY-FTP is retired and must not appear. All proposed services (SVC-APIGW, SVC-WAF, SVC-SQS, SVC-LAMBDA, SVC-AURORA, SVC-EVENTBRIDGE, SVC-TRANSFER, SVC-SECRETS, SVC-KMS) are approved. [enterprise-standards:CTL-ARC-01]\n- **CTL-ARC-02 Infrastructure as code** (required): All environments (dev, staging, production, DR standby) must be provisioned from version-controlled IaC with peer review. No manual console provisioning. [enterprise-standards:CTL-ARC-02]\n- **CTL-ARC-03 Multi-AZ deployment** (required): All stateful tiers (Aurora, SQS) and compute (Lambda) must span at least two AZs in the primary region. Aurora Multi-AZ is required in addition to Global Database. [enterprise-standards:CTL-ARC-03]\n- **CTL-DR-01 Tier-appropriate backups** (required): Configure automated Aurora backups meeting Tier 1 RPO (15 min). Perform and document restore tests on the schedule required by STD-DR-001. [enterprise-standards:CTL-DR-01]\n- **CTL-DR-02 Multi-region failover for Tier 1** (required): Deploy Aurora Global Database (per SVC-AURORA Tier 1 constraint) with a warm standby in a second region. Configure RPO \u226415 min and RTO \u22641 h. Schedule DR failover tests twice per year. [enterprise-standards:CTL-DR-02]\n- **CTL-ENC-01 TLS 1.2+ everywhere** (required): Enforce TLS 1.2+ on all endpoints: API Gateway, Transfer Family SFTP endpoint, payment network gateway connection, and any internal service-to-service calls. Use ACM certificates. [enterprise-standards:CTL-ENC-01]\n- **CTL-ENC-02 Encryption at rest** (required): Enable encryption at rest on Aurora (KMS), SQS (SSE \u2014 required by SVC-SQS catalog constraint), and any S3 buckets used for SFTP landing or event archival. [enterprise-standards:CTL-ENC-02]\n- **CTL-ENC-03 Customer-managed KMS keys** (required): Use customer-managed KMS keys (SVC-KMS) for Aurora, SQS, and any other restricted data stores. Enable automatic key rotation. Scope key policies to this workload only (per SVC-KMS and STD-ENC-002 constraints). [enterprise-standards:CTL-ENC-03]\n- **CTL-IAM-01 Per-component IAM roles** (required): Create a dedicated IAM role for each component: API Gateway execution role, Lambda processor role, Aurora access role, EventBridge publisher role, Transfer Family role. Review each with IAM Access Analyzer. No wildcard actions on data-plane resources. [enterprise-standards:CTL-IAM-01]\n- **CTL-IAM-02 No long-lived credentials** (required): All workload components use temporary role credentials via IAM roles. No IAM user access keys in application code or configuration. Partner API keys (external credentials) must be stored in Secrets Manager, not hardcoded. [enterprise-standards:CTL-IAM-02]\n- **CTL-IAM-03 MFA for sensitive data** (required): Any human operator or partner user accessing restricted settlement data must authenticate with MFA through an approved identity provider. Confirm whether partner API access is machine-to-machine (MFA may not apply) or human-operated (MFA required). [enterprise-standards:CTL-IAM-03]\n- **CTL-IAM-04 Session timeout** (required): Interactive sessions for restricted data must expire within 60 minutes. Apply to any partner portal or internal operations console. [enterprise-standards:CTL-IAM-04]\n- **CTL-LOG-01 Structured logs with correlation IDs** (required): Emit structured JSON logs with a correlation ID propagated across API Gateway, Lambda, SQS, and EventBridge hops. Include payment instruction IDs as correlation context. [enterprise-standards:CTL-LOG-01]\n- **CTL-LOG-02 400-day audit retention** (required): Retain security and audit logs for 400 days. Configure CloudWatch log group retention policies and/or archive to S3 with lifecycle rules. [enterprise-standards:CTL-LOG-02]\n- **CTL-LOG-03 Alarms and tracing** (required): Configure CloudWatch alarms on API error rates, Lambda error rates, SQS dead-letter queue depth, and Aurora replication lag. Enable X-Ray distributed tracing across Lambda and API Gateway. [enterprise-standards:CTL-LOG-03]\n- **CTL-PRV-01 Privacy impact assessment** (required): Complete a Privacy Impact Assessment before production launch. Payment instructions likely contain personal data (account numbers, beneficiary names). PIA must be approved before go-live. [enterprise-standards:CTL-PRV-01]\n- **CTL-PRV-02 Masked non-production data** (required): Mask or tokenize payment account numbers and personal identifiers in non-production environments (dev, staging). Do not copy production payment data to lower environments. [enterprise-standards:CTL-PRV-02]\n- **CTL-PRV-03 Log redaction** (required): Redact account numbers, beneficiary names, and other personal data from all log streams. Any residual personal data in logs must be in streams retained \u226430 days (note conflict with CTL-LOG-02 400-day audit retention \u2014 see conflicts section). [enterprise-standards:CTL-PRV-03]\n- **CTL-TPI-01 Vendor risk assessment** (required): Complete vendor risk assessments for all three external integrations before production: partner firms (REST), the legacy FTP partner (migrating to SFTP), and the payment network gateway. Obtain data processing agreements for restricted data. [enterprise-standards:CTL-TPI-01]\n- **CTL-TPI-02 Managed integration secrets** (required): Store all partner API keys and payment gateway credentials in AWS Secrets Manager (SVC-SECRETS) with rotation enabled (per SVC-SECRETS catalog constraint). [enterprise-standards:CTL-TPI-02]\n- **CTL-TPI-03 Inbound payload validation and rate limiting** (required): Attach AWS WAF (SVC-WAF) to API Gateway with rate-based rules and the AWS managed common rule set (per SVC-WAF catalog constraints). Implement JSON schema validation in Lambda for all inbound payment instruction payloads. Enforce request size limits. [enterprise-standards:CTL-TPI-03]\n- **CTL-TPI-04 No plain FTP** (required): Replace the nightly FTP integration with AWS Transfer Family (SVC-TRANSFER). Disable FTP and FTPS on the Transfer Family endpoint; enforce SFTP with key-based authentication per partner (per SVC-TRANSFER catalog constraint). [enterprise-standards:CTL-TPI-04]\n\n## Conflicting guidance\n- Single-region cost preference vs. mandatory multi-region failover: Operations requires the lowest-cost single-region design, but STD-DR-001 (CTL-DR-02) mandates a tested warm standby in a second region for all Tier 1 workloads (\u226599.95% availability). STD-ARC-002 defaults to single-region but explicitly defers to STD-DR-001 when multi-region is required. The 99.99% target unambiguously triggers Tier 1. These cannot both be satisfied without a formal exception. Resolution: The business must choose: (a) accept multi-region costs to meet the 99.99% SLA and STD-DR-001, using Aurora Global Database and a warm standby region; or (b) lower the availability target to below 99.95% (Tier 2/3), which allows single-region but requires renegotiating the partner SLA. If (a), Operations should seek cost optimization within the multi-region design (e.g., minimal standby capacity). A formal exception from the Resilience Office is required if any deviation from CTL-DR-02 is pursued. [enterprise-standards:STD-DR-001] [enterprise-standards:STD-ARC-002] [enterprise-standards:CTL-DR-02]\n- Log retention vs. privacy redaction: CTL-LOG-02 requires security and audit logs to be retained for 400 days. CTL-PRV-03 requires personal data to be redacted from logs and limits residual personal data in log streams to \u226430 days. Payment instruction logs will likely contain personal data (account numbers, beneficiary names), creating a direct conflict between these two controls. Resolution: Implement two separate log streams: (1) a fully redacted audit log stream retained for 400 days (satisfying CTL-LOG-02), containing correlation IDs, status codes, and non-personal metadata; and (2) a detailed diagnostic stream containing personal data, retained for \u226430 days (satisfying CTL-PRV-03). Redaction must occur at the Lambda/processor layer before emission to the long-retention stream. Confirm approach with Privacy and Security teams during PIA. [enterprise-standards:CTL-LOG-02] [enterprise-standards:CTL-PRV-03]\n\n## Open questions\n\n## Sources\nServers used: approved-service-catalog, enterprise-standards\n- enterprise-standards / list_required_controls: CTL-AI-01, CTL-AI-02, CTL-AI-03, CTL-AI-04, CTL-ARC-01, CTL-ARC-02, CTL-ARC-03, CTL-DR-01, CTL-DR-02, CTL-ENC-01, CTL-ENC-02, CTL-ENC-03, CTL-IAM-01, CTL-IAM-02, CTL-IAM-03, CTL-IAM-04, CTL-LOG-01, CTL-LOG-02, CTL-LOG-03, CTL-PRV-01, CTL-PRV-02, CTL-PRV-03, CTL-TPI-01, CTL-TPI-02, CTL-TPI-03, CTL-TPI-04, STD-AI-001, STD-AI-002, STD-ARC-001, STD-ARC-002, STD-DR-001, STD-ENC-001, STD-ENC-002, STD-IAM-001, STD-IAM-002, STD-LOG-001, STD-LOG-002, STD-PRV-001, STD-PRV-002, STD-TPI-001, STD-TPI-002\n- approved-service-catalog / find_reference_pattern: PAT-AI-001, PAT-DATA-001, PAT-INT-001\n- enterprise-standards / search_standards: STD-AI-001, STD-AI-002, STD-ARC-002, STD-DR-001, STD-ENC-002, STD-IAM-002, STD-TPI-001, STD-TPI-002\n- approved-service-catalog / search_services: SVC-AGENTCORE, SVC-APIGW, SVC-AURORA, SVC-EVENTBRIDGE, SVC-LAMBDA, SVC-LEGACY-FTP, SVC-SECRETS, SVC-TRANSFER\n- approved-service-catalog / get_service_profile: SVC-APIGW\n- approved-service-catalog / get_service_profile: SVC-AURORA\n- approved-service-catalog / get_service_profile: SVC-TRANSFER\n- approved-service-catalog / get_service_profile: SVC-LAMBDA\n- approved-service-catalog / search_services: SVC-LAMBDA, SVC-SQS, SVC-STEPFN\n- approved-service-catalog / search_services: SVC-APIGW, SVC-CLOUDFRONT, SVC-WAF\n- approved-service-catalog / get_service_profile: SVC-SQS\n- approved-service-catalog / get_service_profile: SVC-WAF\n- approved-service-catalog / get_service_profile: SVC-SECRETS\n- approved-service-catalog / get_service_profile: SVC-EVENTBRIDGE\n- enterprise-standards / get_standard: CTL-DR-01, CTL-DR-02, STD-DR-001\n- enterprise-standards / get_standard: CTL-IAM-01, CTL-IAM-02, STD-IAM-001\n- approved-service-catalog / search_services: SVC-COGNITO, SVC-KMS, SVC-SECRETS\n- enterprise-standards / get_standard: CTL-IAM-03, CTL-IAM-04, STD-IAM-002\n- enterprise-standards / get_standard: CTL-TPI-01, CTL-TPI-02, CTL-TPI-03, STD-TPI-001\n- approved-service-catalog / get_service_profile: SVC-KMS\n- enterprise-standards / get_standard: CTL-ARC-03, STD-ARC-002\n\n_ADVISORY ONLY. This review was generated by an AI assistant using SYNTHETIC demonstration standards and a SYNTHETIC service catalog for a fictional organization. It is not an approval, does not reflect the policies, systems, or approvals of any real company, and must be validated by a qualified human reviewer._"
+}

@@ -1,0 +1,266 @@
+{
+  "dataset": "SYNTHETIC DEMONSTRATION DATA - fictional organization 'ExampleCo'. Not real policy. Not affiliated with any real company.",
+  "version": "2026.11-demo",
+  "classifications": ["public", "internal", "confidential", "restricted"],
+  "risk_levels": ["low", "medium", "high", "critical"],
+  "standards": [
+    {
+      "standard_id": "STD-ARC-001",
+      "title": "Prefer managed and serverless services",
+      "category": "architecture",
+      "status": "active",
+      "owner": "ExampleCo Architecture Review Board (fictional)",
+      "statement": "New workloads should use managed or serverless services from the Approved Service Catalog before self-managed compute. Self-managed EC2 requires a documented exception.",
+      "requirements": [
+        "Select services with status 'approved' or 'approved_with_constraints' in the Approved Service Catalog.",
+        "Document an exception for any self-managed server fleet.",
+        "Use infrastructure as code for all environments."
+      ],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-ARC-01", "CTL-ARC-02"],
+      "keywords": ["serverless", "managed", "lambda", "fargate", "ec2", "iac", "cdk", "terraform", "architecture"]
+    },
+    {
+      "standard_id": "STD-ARC-002",
+      "title": "Single-region multi-AZ by default",
+      "category": "architecture",
+      "status": "active",
+      "owner": "ExampleCo Architecture Review Board (fictional)",
+      "statement": "To limit cost and complexity, workloads deploy to a single region across at least two Availability Zones unless the Disaster Recovery standard requires a multi-region posture.",
+      "requirements": [
+        "Deploy across at least two Availability Zones.",
+        "Do not add a second region unless the availability target or STD-DR-001 requires it."
+      ],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-ARC-03"],
+      "keywords": ["region", "multi-az", "availability zone", "cost", "single-region", "resiliency", "availability"],
+      "related_standards": ["STD-DR-001"]
+    },
+    {
+      "standard_id": "STD-IAM-001",
+      "title": "Least-privilege workload identities",
+      "category": "iam",
+      "status": "active",
+      "owner": "ExampleCo Identity Engineering (fictional)",
+      "statement": "Every workload component uses its own IAM role scoped to specific actions and resources. Wildcard actions on production resources are prohibited. Long-lived access keys are prohibited for workloads.",
+      "requirements": [
+        "One IAM role per component; no shared roles across components.",
+        "No '*' actions on data-plane resources.",
+        "No long-lived IAM user access keys in application code or configuration."
+      ],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-IAM-01", "CTL-IAM-02"],
+      "keywords": ["iam", "role", "least privilege", "access key", "permissions", "identity"]
+    },
+    {
+      "standard_id": "STD-IAM-002",
+      "title": "Workforce and customer authentication",
+      "category": "iam",
+      "status": "active",
+      "owner": "ExampleCo Identity Engineering (fictional)",
+      "statement": "Human users authenticate through an approved identity provider. Applications handling confidential or restricted data require multi-factor authentication and session timeouts of 60 minutes or less.",
+      "requirements": [
+        "Use an approved identity provider (catalog SVC-COGNITO or the enterprise IdP).",
+        "MFA required for confidential and restricted data.",
+        "Session lifetime at most 60 minutes for confidential and restricted data."
+      ],
+      "applies_to": {"classifications": ["internal", "confidential", "restricted"], "risk_levels": ["medium", "high", "critical"]},
+      "control_ids": ["CTL-IAM-03", "CTL-IAM-04"],
+      "keywords": ["authentication", "mfa", "login", "sso", "cognito", "users", "customer", "session"]
+    },
+    {
+      "standard_id": "STD-ENC-001",
+      "title": "Encryption in transit",
+      "category": "encryption",
+      "status": "active",
+      "owner": "ExampleCo Cryptography Office (fictional)",
+      "statement": "All network traffic uses TLS 1.2 or later. Public endpoints use certificates issued by an approved certificate authority such as AWS Certificate Manager.",
+      "requirements": ["TLS 1.2+ on every hop.", "Use ACM-issued certificates for public endpoints.", "HSTS on browser-facing sites."],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-ENC-01"],
+      "keywords": ["tls", "https", "certificate", "acm", "transit", "encryption"]
+    },
+    {
+      "standard_id": "STD-ENC-002",
+      "title": "Encryption at rest with managed keys",
+      "category": "encryption",
+      "status": "active",
+      "owner": "ExampleCo Cryptography Office (fictional)",
+      "statement": "Data at rest is encrypted. Confidential and restricted data use customer-managed KMS keys with annual rotation and key policies limited to the owning workload.",
+      "requirements": [
+        "Encrypt all storage at rest.",
+        "Customer-managed KMS key (SVC-KMS) for confidential and restricted data.",
+        "Enable automatic key rotation."
+      ],
+      "applies_to": {"classifications": ["internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-ENC-02", "CTL-ENC-03"],
+      "keywords": ["kms", "encryption", "at rest", "key", "rotation", "storage", "database", "s3"]
+    },
+    {
+      "standard_id": "STD-LOG-001",
+      "title": "Centralized structured logging and retention",
+      "category": "logging",
+      "status": "active",
+      "owner": "ExampleCo Security Operations (fictional)",
+      "statement": "Applications emit structured JSON logs with a correlation ID to CloudWatch Logs. Security-relevant logs are retained for 400 days.",
+      "requirements": [
+        "Structured JSON logs with correlation IDs.",
+        "Retain security and audit logs for 400 days.",
+        "Enable CloudTrail data events for restricted data stores."
+      ],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-LOG-01", "CTL-LOG-02"],
+      "keywords": ["logging", "logs", "cloudwatch", "audit", "retention", "monitoring", "trace", "observability"],
+      "related_standards": ["STD-PRV-002"]
+    },
+    {
+      "standard_id": "STD-LOG-002",
+      "title": "Monitoring, alarms, and tracing",
+      "category": "logging",
+      "status": "active",
+      "owner": "ExampleCo Site Reliability (fictional)",
+      "statement": "Production workloads publish service metrics, alarms on error rate and latency, and distributed tracing across service boundaries.",
+      "requirements": ["Alarms on error rate and p95 latency.", "Distributed tracing (X-Ray or OpenTelemetry).", "Operational dashboard per workload."],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["medium", "high", "critical"]},
+      "control_ids": ["CTL-LOG-03"],
+      "keywords": ["alarm", "metrics", "tracing", "x-ray", "opentelemetry", "dashboard", "operations", "sre"]
+    },
+    {
+      "standard_id": "STD-PRV-001",
+      "title": "Personal data minimization",
+      "category": "privacy",
+      "status": "active",
+      "owner": "ExampleCo Privacy Office (fictional)",
+      "statement": "Collect only personal data needed for the stated purpose. Workloads that process personal data complete a privacy impact assessment before production.",
+      "requirements": [
+        "Complete a privacy impact assessment (PIA) for personal data.",
+        "Document purpose and lawful basis for each personal data element.",
+        "Mask or tokenize personal data in non-production environments."
+      ],
+      "applies_to": {"classifications": ["confidential", "restricted"], "risk_levels": ["medium", "high", "critical"]},
+      "control_ids": ["CTL-PRV-01", "CTL-PRV-02"],
+      "keywords": ["privacy", "personal data", "pii", "customer", "pia", "consent", "minimization", "gdpr"]
+    },
+    {
+      "standard_id": "STD-PRV-002",
+      "title": "No personal data in logs; 30-day limit",
+      "category": "privacy",
+      "status": "active",
+      "owner": "ExampleCo Privacy Office (fictional)",
+      "statement": "Logs must not contain personal data. Where personal data cannot be excluded from a log stream, that stream is retained no longer than 30 days.",
+      "requirements": ["Redact personal data before logging.", "Log streams that may contain personal data: retention 30 days or less."],
+      "applies_to": {"classifications": ["confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-PRV-03"],
+      "keywords": ["logs", "redaction", "pii", "retention", "privacy", "personal data"],
+      "related_standards": ["STD-LOG-001"]
+    },
+    {
+      "standard_id": "STD-AI-001",
+      "title": "Generative AI use governance",
+      "category": "ai_governance",
+      "status": "active",
+      "owner": "ExampleCo Responsible AI Council (fictional)",
+      "statement": "Generative AI features use catalog-approved model platforms, register the use case, keep a human accountable for decisions, and label AI-generated output as advisory.",
+      "requirements": [
+        "Use an approved model platform (SVC-BEDROCK).",
+        "Register the AI use case with the Responsible AI Council.",
+        "Label AI output as advisory; no fully automated decisions affecting customers.",
+        "Do not send restricted data to a model without an approved data-handling review."
+      ],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-AI-01", "CTL-AI-02"],
+      "keywords": ["ai", "genai", "generative", "llm", "model", "bedrock", "chatbot", "agent", "assistant", "machine learning"]
+    },
+    {
+      "standard_id": "STD-AI-002",
+      "title": "AI safety controls: grounding, injection defense, evaluation",
+      "category": "ai_governance",
+      "status": "active",
+      "owner": "ExampleCo Responsible AI Council (fictional)",
+      "statement": "Generative AI applications ground answers in approved sources, defend against prompt injection in user input and retrieved content, filter harmful output, and run evaluations before release.",
+      "requirements": [
+        "Ground responses in approved, cited sources.",
+        "Treat user input and retrieved content as untrusted; detect prompt injection.",
+        "Apply content filtering (for example Bedrock Guardrails).",
+        "Run an offline evaluation set before each release."
+      ],
+      "applies_to": {"classifications": ["internal", "confidential", "restricted"], "risk_levels": ["medium", "high", "critical"]},
+      "control_ids": ["CTL-AI-03", "CTL-AI-04"],
+      "keywords": ["prompt injection", "guardrails", "grounding", "rag", "evaluation", "hallucination", "ai", "llm", "agent"]
+    },
+    {
+      "standard_id": "STD-DR-001",
+      "title": "Availability tiers and recovery objectives",
+      "category": "disaster_recovery",
+      "status": "active",
+      "owner": "ExampleCo Resilience Office (fictional)",
+      "statement": "Workloads are tiered by availability target. Tier 1 (99.95% or higher) requires multi-region active-passive recovery with RPO 15 minutes and RTO 1 hour. Tier 2 (99.9%) requires cross-region backups with RPO 24 hours and RTO 8 hours. Tier 3 (below 99.9%) requires in-region backups.",
+      "requirements": [
+        "Tier 1 (>=99.95%): multi-region active-passive, RPO 15 min, RTO 1 h, DR test twice per year.",
+        "Tier 2 (99.9%): cross-region backups, RPO 24 h, RTO 8 h, annual restore test.",
+        "Tier 3 (<99.9%): in-region backups, RPO 24 h, RTO 72 h."
+      ],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-DR-01", "CTL-DR-02"],
+      "keywords": ["disaster recovery", "dr", "availability", "rpo", "rto", "backup", "multi-region", "failover", "99.9", "99.95", "99.99", "uptime", "resiliency"],
+      "related_standards": ["STD-ARC-002"]
+    },
+    {
+      "standard_id": "STD-TPI-001",
+      "title": "Third-party integration security",
+      "category": "third_party",
+      "status": "active",
+      "owner": "ExampleCo Vendor Risk Management (fictional)",
+      "statement": "Integrations with external parties complete a vendor risk assessment, use authenticated and encrypted channels, store credentials in a secrets manager, and validate all inbound payloads.",
+      "requirements": [
+        "Vendor risk assessment before production data exchange.",
+        "Credentials stored in Secrets Manager (SVC-SECRETS) with rotation.",
+        "Validate and size-limit inbound payloads; rate limit public endpoints.",
+        "Data processing agreement for confidential or restricted data shared with vendors."
+      ],
+      "applies_to": {"classifications": ["internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-TPI-01", "CTL-TPI-02", "CTL-TPI-03"],
+      "keywords": ["third party", "vendor", "integration", "partner", "external", "api", "saas", "webhook", "salesforce", "crm", "payment"]
+    },
+    {
+      "standard_id": "STD-TPI-002",
+      "title": "Legacy file transfer retirement",
+      "category": "third_party",
+      "status": "active",
+      "owner": "ExampleCo Vendor Risk Management (fictional)",
+      "statement": "Plain FTP and unauthenticated file drops are prohibited. Use managed SFTP or API-based exchange.",
+      "requirements": ["No plain FTP.", "Use SVC-TRANSFER (managed SFTP) or authenticated APIs."],
+      "applies_to": {"classifications": ["public", "internal", "confidential", "restricted"], "risk_levels": ["low", "medium", "high", "critical"]},
+      "control_ids": ["CTL-TPI-04"],
+      "keywords": ["ftp", "sftp", "file transfer", "batch", "partner", "legacy"]
+    }
+  ],
+  "controls": [
+    {"control_id": "CTL-ARC-01", "title": "Catalog-approved services only", "description": "Every component maps to an approved catalog entry or a documented exception.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-ARC-001"},
+    {"control_id": "CTL-ARC-02", "title": "Infrastructure as code", "description": "All environments are provisioned from version-controlled IaC with peer review.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-ARC-001"},
+    {"control_id": "CTL-ARC-03", "title": "Multi-AZ deployment", "description": "Stateful and compute tiers span at least two Availability Zones.", "min_risk_level": "medium", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-ARC-002"},
+    {"control_id": "CTL-IAM-01", "title": "Per-component IAM roles", "description": "Each component has a dedicated least-privilege role reviewed with IAM Access Analyzer.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-IAM-001"},
+    {"control_id": "CTL-IAM-02", "title": "No long-lived credentials", "description": "Workloads use temporary role credentials; no IAM user keys.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-IAM-001"},
+    {"control_id": "CTL-IAM-03", "title": "MFA for sensitive data", "description": "Users accessing confidential or restricted data must use MFA.", "min_risk_level": "medium", "classifications": ["confidential", "restricted"], "standard_id": "STD-IAM-002"},
+    {"control_id": "CTL-IAM-04", "title": "Session timeout", "description": "Interactive sessions expire within 60 minutes for sensitive data.", "min_risk_level": "medium", "classifications": ["confidential", "restricted"], "standard_id": "STD-IAM-002"},
+    {"control_id": "CTL-ENC-01", "title": "TLS 1.2+ everywhere", "description": "All endpoints enforce TLS 1.2 or later with ACM certificates.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-ENC-001"},
+    {"control_id": "CTL-ENC-02", "title": "Encryption at rest", "description": "All data stores encrypted at rest.", "min_risk_level": "low", "classifications": ["internal", "confidential", "restricted"], "standard_id": "STD-ENC-002"},
+    {"control_id": "CTL-ENC-03", "title": "Customer-managed KMS keys", "description": "Confidential and restricted data use customer-managed KMS keys with rotation.", "min_risk_level": "medium", "classifications": ["confidential", "restricted"], "standard_id": "STD-ENC-002"},
+    {"control_id": "CTL-LOG-01", "title": "Structured logs with correlation IDs", "description": "JSON logs carrying a correlation ID across all hops.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-LOG-001"},
+    {"control_id": "CTL-LOG-02", "title": "400-day audit retention", "description": "Security and audit logs retained 400 days.", "min_risk_level": "medium", "classifications": ["internal", "confidential", "restricted"], "standard_id": "STD-LOG-001"},
+    {"control_id": "CTL-LOG-03", "title": "Alarms and tracing", "description": "Error-rate and latency alarms plus distributed tracing.", "min_risk_level": "medium", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-LOG-002"},
+    {"control_id": "CTL-PRV-01", "title": "Privacy impact assessment", "description": "PIA approved before production processing of personal data.", "min_risk_level": "medium", "classifications": ["confidential", "restricted"], "standard_id": "STD-PRV-001"},
+    {"control_id": "CTL-PRV-02", "title": "Masked non-production data", "description": "Personal data masked or tokenized outside production.", "min_risk_level": "medium", "classifications": ["confidential", "restricted"], "standard_id": "STD-PRV-001"},
+    {"control_id": "CTL-PRV-03", "title": "Log redaction", "description": "Personal data redacted from logs; residual streams retained <=30 days.", "min_risk_level": "low", "classifications": ["confidential", "restricted"], "standard_id": "STD-PRV-002"},
+    {"control_id": "CTL-AI-01", "title": "AI use-case registration", "description": "Use case registered with the Responsible AI Council before launch.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-AI-001"},
+    {"control_id": "CTL-AI-02", "title": "Human accountability and advisory labeling", "description": "AI output labeled advisory; a named human owns decisions.", "min_risk_level": "medium", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-AI-001"},
+    {"control_id": "CTL-AI-03", "title": "Prompt-injection and content filtering", "description": "Injection detection on inputs and retrieved content; guardrail filtering on outputs.", "min_risk_level": "medium", "classifications": ["internal", "confidential", "restricted"], "standard_id": "STD-AI-002"},
+    {"control_id": "CTL-AI-04", "title": "Pre-release evaluation", "description": "Offline evaluation set run and reviewed before each release.", "min_risk_level": "high", "classifications": ["internal", "confidential", "restricted"], "standard_id": "STD-AI-002"},
+    {"control_id": "CTL-DR-01", "title": "Tier-appropriate backups", "description": "Backups configured to meet the tier RPO, with restore tests.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-DR-001"},
+    {"control_id": "CTL-DR-02", "title": "Multi-region failover for Tier 1", "description": "Tier 1 workloads maintain a tested warm standby in a second region.", "min_risk_level": "high", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-DR-001"},
+    {"control_id": "CTL-TPI-01", "title": "Vendor risk assessment", "description": "Completed vendor risk assessment before production data exchange.", "min_risk_level": "low", "classifications": ["internal", "confidential", "restricted"], "standard_id": "STD-TPI-001"},
+    {"control_id": "CTL-TPI-02", "title": "Managed integration secrets", "description": "Partner credentials stored in Secrets Manager with rotation.", "min_risk_level": "low", "classifications": ["internal", "confidential", "restricted"], "standard_id": "STD-TPI-001"},
+    {"control_id": "CTL-TPI-03", "title": "Inbound payload validation and rate limiting", "description": "Schema validation, size limits, and WAF rate limiting on partner-facing endpoints.", "min_risk_level": "medium", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-TPI-001"},
+    {"control_id": "CTL-TPI-04", "title": "No plain FTP", "description": "File exchange uses managed SFTP or authenticated APIs.", "min_risk_level": "low", "classifications": ["public", "internal", "confidential", "restricted"], "standard_id": "STD-TPI-002"}
+  ]
+}

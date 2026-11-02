@@ -1,0 +1,4318 @@
+{
+ "Description": "Enterprise Solution Review Assistant (demo): web, API, agent, and two AgentCore MCP runtimes",
+ "Resources": {
+  "standardsMcpRoleAC81747D": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Condition": {
+        "StringEquals": {
+         "aws:SourceAccount": "154833006816"
+        },
+        "ArnLike": {
+         "aws:SourceArn": "arn:aws:bedrock-agentcore:us-west-2:154833006816:*"
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "bedrock-agentcore.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "AgentCore Runtime execution role for archrev_standards_mcp",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/standardsMcpRole/Resource"
+   }
+  },
+  "standardsMcpRoleDefaultPolicyE673D49B": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::cdk-archrev-assets-154833006816-us-west-2"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::cdk-archrev-assets-154833006816-us-west-2/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "standardsMcpRoleDefaultPolicyE673D49B",
+    "Roles": [
+     {
+      "Ref": "standardsMcpRoleAC81747D"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/standardsMcpRole/DefaultPolicy/Resource"
+   }
+  },
+  "standardsMcpPolicy9F5CDF2D": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:us-west-2:154833006816:log-group:/aws/bedrock-agentcore/runtimes/*"
+      },
+      {
+       "Action": "logs:DescribeLogGroups",
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:us-west-2:154833006816:log-group:*"
+      },
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords",
+        "xray:GetSamplingRules",
+        "xray:GetSamplingTargets"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": "cloudwatch:PutMetricData",
+       "Condition": {
+        "StringEquals": {
+         "cloudwatch:namespace": "bedrock-agentcore"
+        }
+       },
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": "s3:GetObject",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":s3:::cdk-archrev-assets-154833006816-us-west-2/b8959cccfedaf81b838d463c85f5f9ce07b45699b5a857434820dc39a76e3294.zip"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "standardsMcpPolicy9F5CDF2D",
+    "Roles": [
+     {
+      "Ref": "standardsMcpRoleAC81747D"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/standardsMcpPolicy/Resource"
+   }
+  },
+  "standardsRuntime": {
+   "Type": "AWS::BedrockAgentCore::Runtime",
+   "Properties": {
+    "AgentRuntimeArtifact": {
+     "CodeConfiguration": {
+      "Code": {
+       "S3": {
+        "Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+        "Prefix": "b8959cccfedaf81b838d463c85f5f9ce07b45699b5a857434820dc39a76e3294.zip"
+       }
+      },
+      "EntryPoint": [
+       "main.py"
+      ],
+      "Runtime": "PYTHON_3_13"
+     }
+    },
+    "AgentRuntimeName": "archrev_standards_mcp",
+    "Description": "Enterprise Standards MCP server (synthetic data)",
+    "EnvironmentVariables": {
+     "PYTHONUNBUFFERED": "1",
+     "DATASET": "synthetic-demo"
+    },
+    "LifecycleConfiguration": {
+     "IdleRuntimeSessionTimeout": 300,
+     "MaxLifetime": 1800
+    },
+    "NetworkConfiguration": {
+     "NetworkMode": "PUBLIC"
+    },
+    "ProtocolConfiguration": "MCP",
+    "RequestHeaderConfiguration": {
+     "RequestHeaderAllowlist": [
+      "X-Amzn-Bedrock-AgentCore-Runtime-Custom-Correlation-Id"
+     ]
+    },
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "standardsMcpRoleAC81747D",
+      "Arn"
+     ]
+    },
+    "Tags": {
+     "Application": "EnterpriseSolutionReviewAssistant",
+     "Environment": "demo"
+    }
+   },
+   "DependsOn": [
+    "standardsMcpPolicy9F5CDF2D",
+    "standardsMcpRoleDefaultPolicyE673D49B",
+    "standardsMcpRoleAC81747D"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/standardsRuntime"
+   }
+  },
+  "standardsRuntimeArnParamDC4A3FE4": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Name": "/archrev/runtimes/standards",
+    "Tags": {
+     "Application": "EnterpriseSolutionReviewAssistant",
+     "Environment": "demo"
+    },
+    "Type": "String",
+    "Value": {
+     "Fn::GetAtt": [
+      "standardsRuntime",
+      "AgentRuntimeArn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/standardsRuntimeArnParam/Resource"
+   }
+  },
+  "catalogMcpRole676B9AB3": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Condition": {
+        "StringEquals": {
+         "aws:SourceAccount": "154833006816"
+        },
+        "ArnLike": {
+         "aws:SourceArn": "arn:aws:bedrock-agentcore:us-west-2:154833006816:*"
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "bedrock-agentcore.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "AgentCore Runtime execution role for archrev_catalog_mcp",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/catalogMcpRole/Resource"
+   }
+  },
+  "catalogMcpRoleDefaultPolicyA7E09BCD": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::cdk-archrev-assets-154833006816-us-west-2"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::cdk-archrev-assets-154833006816-us-west-2/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "catalogMcpRoleDefaultPolicyA7E09BCD",
+    "Roles": [
+     {
+      "Ref": "catalogMcpRole676B9AB3"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/catalogMcpRole/DefaultPolicy/Resource"
+   }
+  },
+  "catalogMcpPolicyC1146FD4": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:us-west-2:154833006816:log-group:/aws/bedrock-agentcore/runtimes/*"
+      },
+      {
+       "Action": "logs:DescribeLogGroups",
+       "Effect": "Allow",
+       "Resource": "arn:aws:logs:us-west-2:154833006816:log-group:*"
+      },
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords",
+        "xray:GetSamplingRules",
+        "xray:GetSamplingTargets"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": "cloudwatch:PutMetricData",
+       "Condition": {
+        "StringEquals": {
+         "cloudwatch:namespace": "bedrock-agentcore"
+        }
+       },
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": "s3:GetObject",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:",
+          {
+           "Ref": "AWS::Partition"
+          },
+          ":s3:::cdk-archrev-assets-154833006816-us-west-2/dcd4e65721d854f27c3cd12a8cacba5b880111af2af1de417bf854c482b6b66d.zip"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "catalogMcpPolicyC1146FD4",
+    "Roles": [
+     {
+      "Ref": "catalogMcpRole676B9AB3"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/catalogMcpPolicy/Resource"
+   }
+  },
+  "catalogRuntime": {
+   "Type": "AWS::BedrockAgentCore::Runtime",
+   "Properties": {
+    "AgentRuntimeArtifact": {
+     "CodeConfiguration": {
+      "Code": {
+       "S3": {
+        "Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+        "Prefix": "dcd4e65721d854f27c3cd12a8cacba5b880111af2af1de417bf854c482b6b66d.zip"
+       }
+      },
+      "EntryPoint": [
+       "main.py"
+      ],
+      "Runtime": "PYTHON_3_13"
+     }
+    },
+    "AgentRuntimeName": "archrev_catalog_mcp",
+    "Description": "Approved Service Catalog MCP server (synthetic data)",
+    "EnvironmentVariables": {
+     "PYTHONUNBUFFERED": "1",
+     "DATASET": "synthetic-demo"
+    },
+    "LifecycleConfiguration": {
+     "IdleRuntimeSessionTimeout": 300,
+     "MaxLifetime": 1800
+    },
+    "NetworkConfiguration": {
+     "NetworkMode": "PUBLIC"
+    },
+    "ProtocolConfiguration": "MCP",
+    "RequestHeaderConfiguration": {
+     "RequestHeaderAllowlist": [
+      "X-Amzn-Bedrock-AgentCore-Runtime-Custom-Correlation-Id"
+     ]
+    },
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "catalogMcpRole676B9AB3",
+      "Arn"
+     ]
+    },
+    "Tags": {
+     "Application": "EnterpriseSolutionReviewAssistant",
+     "Environment": "demo"
+    }
+   },
+   "DependsOn": [
+    "catalogMcpPolicyC1146FD4",
+    "catalogMcpRoleDefaultPolicyA7E09BCD",
+    "catalogMcpRole676B9AB3"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/catalogRuntime"
+   }
+  },
+  "catalogRuntimeArnParam2088B95E": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Name": "/archrev/runtimes/catalog",
+    "Tags": {
+     "Application": "EnterpriseSolutionReviewAssistant",
+     "Environment": "demo"
+    },
+    "Type": "String",
+    "Value": {
+     "Fn::GetAtt": [
+      "catalogRuntime",
+      "AgentRuntimeArn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/catalogRuntimeArnParam/Resource"
+   }
+  },
+  "ModelIdsParam6EEB8324": {
+   "Type": "AWS::SSM::Parameter",
+   "Properties": {
+    "Description": "Ordered list of Bedrock model/inference-profile IDs verified invocable at deploy time",
+    "Name": "/archrev/model-ids",
+    "Tags": {
+     "Application": "EnterpriseSolutionReviewAssistant",
+     "Environment": "demo"
+    },
+    "Type": "String",
+    "Value": "[\"us.anthropic.claude-sonnet-4-6\", \"us.anthropic.claude-sonnet-4-5-20250929-v1:0\", \"us.anthropic.claude-haiku-4-5-20251001-v1:0\"]"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ModelIdsParam/Resource"
+   }
+  },
+  "ReviewsAA74421E": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "review_id",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "owner",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "created_at",
+      "AttributeType": "N"
+     },
+     {
+      "AttributeName": "entity",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "GlobalSecondaryIndexes": [
+     {
+      "IndexName": "owner-index",
+      "KeySchema": [
+       {
+        "AttributeName": "owner",
+        "KeyType": "HASH"
+       },
+       {
+        "AttributeName": "created_at",
+        "KeyType": "RANGE"
+       }
+      ],
+      "Projection": {
+       "NonKeyAttributes": [
+        "status",
+        "title",
+        "correlation_id",
+        "completed_at",
+        "error"
+       ],
+       "ProjectionType": "INCLUDE"
+      }
+     },
+     {
+      "IndexName": "all-index",
+      "KeySchema": [
+       {
+        "AttributeName": "entity",
+        "KeyType": "HASH"
+       },
+       {
+        "AttributeName": "created_at",
+        "KeyType": "RANGE"
+       }
+      ],
+      "Projection": {
+       "NonKeyAttributes": [
+        "status",
+        "title",
+        "correlation_id",
+        "completed_at",
+        "owner",
+        "error"
+       ],
+       "ProjectionType": "INCLUDE"
+      }
+     }
+    ],
+    "KeySchema": [
+     {
+      "AttributeName": "review_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "PointInTimeRecoverySpecification": {
+     "PointInTimeRecoveryEnabled": true
+    },
+    "SSESpecification": {
+     "SSEEnabled": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "TimeToLiveSpecification": {
+     "AttributeName": "ttl",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Reviews/Resource"
+   }
+  },
+  "Users0A0EEA89": {
+   "Type": "AWS::Cognito::UserPool",
+   "Properties": {
+    "AccountRecoverySetting": {
+     "RecoveryMechanisms": [
+      {
+       "Name": "admin_only",
+       "Priority": 1
+      }
+     ]
+    },
+    "AdminCreateUserConfig": {
+     "AllowAdminCreateUserOnly": true
+    },
+    "EmailVerificationMessage": "The verification code to your new account is {####}",
+    "EmailVerificationSubject": "Verify your new account",
+    "MfaConfiguration": "OFF",
+    "Policies": {
+     "PasswordPolicy": {
+      "MinimumLength": 6,
+      "RequireLowercase": false,
+      "RequireNumbers": false,
+      "RequireSymbols": false,
+      "RequireUppercase": false,
+      "TemporaryPasswordValidityDays": 1
+     }
+    },
+    "SmsVerificationMessage": "The verification code to your new account is {####}",
+    "UserPoolName": "archrev-users",
+    "UserPoolTags": {
+     "Application": "EnterpriseSolutionReviewAssistant",
+     "Environment": "demo"
+    },
+    "UsernameConfiguration": {
+     "CaseSensitive": false
+    },
+    "VerificationMessageTemplate": {
+     "DefaultEmailOption": "CONFIRM_WITH_CODE",
+     "EmailMessage": "The verification code to your new account is {####}",
+     "EmailSubject": "Verify your new account",
+     "SmsMessage": "The verification code to your new account is {####}"
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Users/Resource"
+   }
+  },
+  "UsersWebClient8EE36D42": {
+   "Type": "AWS::Cognito::UserPoolClient",
+   "Properties": {
+    "AccessTokenValidity": 240,
+    "AllowedOAuthFlows": [
+     "implicit",
+     "code"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "AllowedOAuthScopes": [
+     "profile",
+     "phone",
+     "email",
+     "openid",
+     "aws.cognito.signin.user.admin"
+    ],
+    "CallbackURLs": [
+     "https://example.com"
+    ],
+    "ExplicitAuthFlows": [
+     "ALLOW_USER_PASSWORD_AUTH",
+     "ALLOW_REFRESH_TOKEN_AUTH"
+    ],
+    "GenerateSecret": false,
+    "IdTokenValidity": 240,
+    "PreventUserExistenceErrors": "ENABLED",
+    "RefreshTokenValidity": 1440,
+    "SupportedIdentityProviders": [
+     "COGNITO"
+    ],
+    "TokenValidityUnits": {
+     "AccessToken": "minutes",
+     "IdToken": "minutes",
+     "RefreshToken": "minutes"
+    },
+    "UserPoolId": {
+     "Ref": "Users0A0EEA89"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Users/WebClient/Resource"
+   }
+  },
+  "Grouparchitect": {
+   "Type": "AWS::Cognito::UserPoolGroup",
+   "Properties": {
+    "Description": "Solution architects: submit reviews and see their own",
+    "GroupName": "architect",
+    "UserPoolId": {
+     "Ref": "Users0A0EEA89"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Group-architect"
+   }
+  },
+  "Groupgovernance": {
+   "Type": "AWS::Cognito::UserPoolGroup",
+   "Properties": {
+    "Description": "Governance reviewers: submit reviews and see all reviews",
+    "GroupName": "governance",
+    "UserPoolId": {
+     "Ref": "Users0A0EEA89"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Group-governance"
+   }
+  },
+  "WorkerLogsC1193B08": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "RetentionInDays": 30,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/WorkerLogs/Resource"
+   }
+  },
+  "WorkerServiceRole8543584E": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Worker/ServiceRole/Resource"
+   }
+  },
+  "WorkerServiceRoleDefaultPolicyAE71B5FA": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ReviewsAA74421E",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ReviewsAA74421E",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ReviewsAA74421E",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ReviewsAA74421E",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "bedrock-agentcore:InvokeAgentRuntime",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "standardsRuntime",
+          "AgentRuntimeArn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "standardsRuntime",
+             "AgentRuntimeArn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        },
+        {
+         "Fn::GetAtt": [
+          "catalogRuntime",
+          "AgentRuntimeArn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "catalogRuntime",
+             "AgentRuntimeArn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        "arn:aws:bedrock:*::foundation-model/anthropic.*",
+        "arn:aws:bedrock:*::foundation-model/amazon.nova-*",
+        "arn:aws:bedrock:us-west-2:154833006816:inference-profile/us.*",
+        "arn:aws:bedrock:us-west-2:154833006816:inference-profile/global.*"
+       ]
+      },
+      {
+       "Action": [
+        "ssm:GetParametersByPath",
+        "ssm:GetParameter"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        "arn:aws:ssm:us-west-2:154833006816:parameter/archrev",
+        "arn:aws:ssm:us-west-2:154833006816:parameter/archrev/*"
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "WorkerServiceRoleDefaultPolicyAE71B5FA",
+    "Roles": [
+     {
+      "Ref": "WorkerServiceRole8543584E"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Worker/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "Worker11F36D0F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+     "S3Key": "7e70a33ea3bba7919a8cd430261b5f9d10015c53c0a287bc0fa7194c82569299.zip"
+    },
+    "Description": "Review agent: orchestrates Bedrock + both AgentCore MCP servers",
+    "Environment": {
+     "Variables": {
+      "TABLE_NAME": {
+       "Ref": "ReviewsAA74421E"
+      },
+      "PARAM_PREFIX": "/archrev",
+      "METRICS_NAMESPACE": "ArchReview",
+      "LOG_PROPOSAL_TEXT": "false",
+      "SERVICE_NAME": "archrev-worker",
+      "STANDARDS_RUNTIME_ARN": {
+       "Fn::GetAtt": [
+        "standardsRuntime",
+        "AgentRuntimeArn"
+       ]
+      },
+      "CATALOG_RUNTIME_ARN": {
+       "Fn::GetAtt": [
+        "catalogRuntime",
+        "AgentRuntimeArn"
+       ]
+      }
+     }
+    },
+    "Handler": "archrev.worker.handler",
+    "LoggingConfig": {
+     "LogGroup": {
+      "Ref": "WorkerLogsC1193B08"
+     }
+    },
+    "MemorySize": 1024,
+    "ReservedConcurrentExecutions": 10,
+    "Role": {
+     "Fn::GetAtt": [
+      "WorkerServiceRole8543584E",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Timeout": 300,
+    "TracingConfig": {
+     "Mode": "Active"
+    }
+   },
+   "DependsOn": [
+    "WorkerServiceRoleDefaultPolicyAE71B5FA",
+    "WorkerServiceRole8543584E"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Worker/Resource",
+    "aws:asset:path": "asset.7e70a33ea3bba7919a8cd430261b5f9d10015c53c0a287bc0fa7194c82569299",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "WorkerEventInvokeConfig3C332003": {
+   "Type": "AWS::Lambda::EventInvokeConfig",
+   "Properties": {
+    "FunctionName": {
+     "Ref": "Worker11F36D0F"
+    },
+    "MaximumRetryAttempts": 0,
+    "Qualifier": "$LATEST"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Worker/EventInvokeConfig/Resource"
+   }
+  },
+  "ApiFnLogsADB874AE": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "RetentionInDays": 30,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiFnLogs/Resource"
+   }
+  },
+  "ApiFnServiceRoleD18AAE0E": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiFn/ServiceRole/Resource"
+   }
+  },
+  "ApiFnServiceRoleDefaultPolicy56A1E6E5": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "xray:PutTraceSegments",
+        "xray:PutTelemetryRecords"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ReviewsAA74421E",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ReviewsAA74421E",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ReviewsAA74421E",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ReviewsAA74421E",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "Worker11F36D0F",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "Worker11F36D0F",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminAddUserToGroup",
+        "cognito-idp:AdminDeleteUser",
+        "cognito-idp:AdminListGroupsForUser"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "Users0A0EEA89",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ApiFnServiceRoleDefaultPolicy56A1E6E5",
+    "Roles": [
+     {
+      "Ref": "ApiFnServiceRoleD18AAE0E"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiFn/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ApiFnE0725F78": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+     "S3Key": "7e70a33ea3bba7919a8cd430261b5f9d10015c53c0a287bc0fa7194c82569299.zip"
+    },
+    "Description": "Public REST API for the review assistant",
+    "Environment": {
+     "Variables": {
+      "TABLE_NAME": {
+       "Ref": "ReviewsAA74421E"
+      },
+      "PARAM_PREFIX": "/archrev",
+      "METRICS_NAMESPACE": "ArchReview",
+      "LOG_PROPOSAL_TEXT": "false",
+      "SERVICE_NAME": "archrev-api",
+      "ALLOWED_ORIGIN": "https://archreview.awsteach.com",
+      "USER_POOL_ID": {
+       "Ref": "Users0A0EEA89"
+      },
+      "USER_POOL_CLIENT_ID": {
+       "Ref": "UsersWebClient8EE36D42"
+      },
+      "WORKER_FUNCTION_NAME": {
+       "Ref": "Worker11F36D0F"
+      },
+      "REVIEWS_PER_USER_PER_HOUR": "10",
+      "REVIEW_RETENTION_DAYS": "7"
+     }
+    },
+    "Handler": "archrev.api.handler",
+    "LoggingConfig": {
+     "LogGroup": {
+      "Ref": "ApiFnLogsADB874AE"
+     }
+    },
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "ApiFnServiceRoleD18AAE0E",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Timeout": 15,
+    "TracingConfig": {
+     "Mode": "Active"
+    }
+   },
+   "DependsOn": [
+    "ApiFnServiceRoleDefaultPolicy56A1E6E5",
+    "ApiFnServiceRoleD18AAE0E"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiFn/Resource",
+    "aws:asset:path": "asset.7e70a33ea3bba7919a8cd430261b5f9d10015c53c0a287bc0fa7194c82569299",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ApiAccessLogsE9DF007D": {
+   "Type": "AWS::Logs::LogGroup",
+   "Properties": {
+    "RetentionInDays": 30,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiAccessLogs/Resource"
+   }
+  },
+  "ApiF70053CD": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "Enterprise Solution Review Assistant API (demo)",
+    "EndpointConfiguration": {
+     "Types": [
+      "REGIONAL"
+     ]
+    },
+    "Name": "archrev-api",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Resource"
+   }
+  },
+  "ApiCloudWatchRole73EC6FC4": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/CloudWatchRole/Resource"
+   }
+  },
+  "ApiAccountA18C9B29": {
+   "Type": "AWS::ApiGateway::Account",
+   "Properties": {
+    "CloudWatchRoleArn": {
+     "Fn::GetAtt": [
+      "ApiCloudWatchRole73EC6FC4",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "ApiF70053CD"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Account"
+   }
+  },
+  "ApiDeploymentB17BE62D87c3a6615a7b8054fcfc0ad48c5a5fa3": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "Enterprise Solution Review Assistant API (demo)",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "DependsOn": [
+    "ApiauthloginOPTIONSCCF6F50B",
+    "ApiauthloginPOSTFBEAB6D5",
+    "Apiauthlogin425AB418",
+    "ApiauthOPTIONSC18B26B2",
+    "ApiauthregisterOPTIONS2E4F097E",
+    "ApiauthregisterPOST7825E6CB",
+    "Apiauthregister43B003AC",
+    "Apiauth161C653C",
+    "ApihealthGET8A9DC1E4",
+    "ApihealthOPTIONS119B6E46",
+    "Apihealth5CB7A415",
+    "ApimeGET6BB88685",
+    "ApimeOPTIONS42FCCDD6",
+    "ApimeE419BFF3",
+    "ApiOPTIONS5886EA5D",
+    "ApireviewsidGETE0917F68",
+    "ApireviewsidOPTIONS2E04A775",
+    "Apireviewsid3FF81585",
+    "ApireviewsGET8FD667D1",
+    "ApireviewsOPTIONSB45266A1",
+    "ApireviewsPOST6D2C3AE9",
+    "ApireviewsBCBDBF1B",
+    "ApiDefault4xx3D30C544",
+    "ApiDefault5xx350DA352"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Deployment/Resource",
+    "aws:cdk:do-not-refactor": true
+   }
+  },
+  "ApiDeploymentStagev102147F91": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "AccessLogSetting": {
+     "DestinationArn": {
+      "Fn::GetAtt": [
+       "ApiAccessLogsE9DF007D",
+       "Arn"
+      ]
+     },
+     "Format": "{\"requestId\":\"$context.requestId\",\"ip\":\"$context.identity.sourceIp\",\"requestTime\":\"$context.requestTime\",\"httpMethod\":\"$context.httpMethod\",\"resourcePath\":\"$context.resourcePath\",\"status\":\"$context.status\",\"protocol\":\"$context.protocol\",\"responseLength\":\"$context.responseLength\"}"
+    },
+    "DeploymentId": {
+     "Ref": "ApiDeploymentB17BE62D87c3a6615a7b8054fcfc0ad48c5a5fa3"
+    },
+    "MethodSettings": [
+     {
+      "DataTraceEnabled": false,
+      "HttpMethod": "*",
+      "LoggingLevel": "ERROR",
+      "MetricsEnabled": true,
+      "ResourcePath": "/*",
+      "ThrottlingBurstLimit": 40,
+      "ThrottlingRateLimit": 20
+     }
+    ],
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    },
+    "StageName": "v1",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "TracingEnabled": true
+   },
+   "DependsOn": [
+    "ApiAccountA18C9B29"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/DeploymentStage.v1/Resource"
+   }
+  },
+  "ApiOPTIONS5886EA5D": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/OPTIONS/Resource"
+   }
+  },
+  "Apihealth5CB7A415": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "health",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/health/Resource"
+   }
+  },
+  "ApihealthOPTIONS119B6E46": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apihealth5CB7A415"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/health/OPTIONS/Resource"
+   }
+  },
+  "ApihealthGETApiPermissionArchRevAppApiF04690A0GEThealthE5ECB518": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       },
+       "/GET/health"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/health/GET/ApiPermission.ArchRevAppApiF04690A0.GET..health"
+   }
+  },
+  "ApihealthGETApiPermissionTestArchRevAppApiF04690A0GEThealthB8ECCB82": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/health"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/health/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..health"
+   }
+  },
+  "ApihealthGET8A9DC1E4": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-west-2:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiFnE0725F78",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apihealth5CB7A415"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/health/GET/Resource"
+   }
+  },
+  "Apiauth161C653C": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "auth",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/Resource"
+   }
+  },
+  "ApiauthOPTIONSC18B26B2": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiauth161C653C"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/OPTIONS/Resource"
+   }
+  },
+  "Apiauthregister43B003AC": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiauth161C653C"
+    },
+    "PathPart": "register",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/register/Resource"
+   }
+  },
+  "ApiauthregisterOPTIONS2E4F097E": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiauthregister43B003AC"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/register/OPTIONS/Resource"
+   }
+  },
+  "ApiauthregisterPOSTApiPermissionArchRevAppApiF04690A0POSTauthregister6BC9C542": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       },
+       "/POST/auth/register"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/register/POST/ApiPermission.ArchRevAppApiF04690A0.POST..auth.register"
+   }
+  },
+  "ApiauthregisterPOSTApiPermissionTestArchRevAppApiF04690A0POSTauthregister8E0A9B88": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/auth/register"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/register/POST/ApiPermission.Test.ArchRevAppApiF04690A0.POST..auth.register"
+   }
+  },
+  "ApiauthregisterPOST7825E6CB": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-west-2:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiFnE0725F78",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiauthregister43B003AC"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/register/POST/Resource"
+   }
+  },
+  "Apiauthlogin425AB418": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "Apiauth161C653C"
+    },
+    "PathPart": "login",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/login/Resource"
+   }
+  },
+  "ApiauthloginOPTIONSCCF6F50B": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apiauthlogin425AB418"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/login/OPTIONS/Resource"
+   }
+  },
+  "ApiauthloginPOSTApiPermissionArchRevAppApiF04690A0POSTauthlogin99021753": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       },
+       "/POST/auth/login"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/login/POST/ApiPermission.ArchRevAppApiF04690A0.POST..auth.login"
+   }
+  },
+  "ApiauthloginPOSTApiPermissionTestArchRevAppApiF04690A0POSTauthlogin8CFFA7E7": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/auth/login"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/login/POST/ApiPermission.Test.ArchRevAppApiF04690A0.POST..auth.login"
+   }
+  },
+  "ApiauthloginPOSTFBEAB6D5": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-west-2:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiFnE0725F78",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apiauthlogin425AB418"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/auth/login/POST/Resource"
+   }
+  },
+  "ApimeE419BFF3": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "me",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/me/Resource"
+   }
+  },
+  "ApimeOPTIONS42FCCDD6": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ApimeE419BFF3"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/me/OPTIONS/Resource"
+   }
+  },
+  "ApimeGETApiPermissionArchRevAppApiF04690A0GETme42D9F31F": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       },
+       "/GET/me"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/me/GET/ApiPermission.ArchRevAppApiF04690A0.GET..me"
+   }
+  },
+  "ApimeGETApiPermissionTestArchRevAppApiF04690A0GETme07E05FA8": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/me"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/me/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..me"
+   }
+  },
+  "ApimeGET6BB88685": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "AuthorizerBD825682"
+    },
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-west-2:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiFnE0725F78",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "ApimeE419BFF3"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/me/GET/Resource"
+   }
+  },
+  "ApireviewsBCBDBF1B": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ApiF70053CD",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "reviews",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/Resource"
+   }
+  },
+  "ApireviewsOPTIONSB45266A1": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ApireviewsBCBDBF1B"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/OPTIONS/Resource"
+   }
+  },
+  "ApireviewsPOSTApiPermissionArchRevAppApiF04690A0POSTreviews61276BD3": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       },
+       "/POST/reviews"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/POST/ApiPermission.ArchRevAppApiF04690A0.POST..reviews"
+   }
+  },
+  "ApireviewsPOSTApiPermissionTestArchRevAppApiF04690A0POSTreviews1F89CB20": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/POST/reviews"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/POST/ApiPermission.Test.ArchRevAppApiF04690A0.POST..reviews"
+   }
+  },
+  "ApireviewsPOST6D2C3AE9": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "AuthorizerBD825682"
+    },
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-west-2:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiFnE0725F78",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "ApireviewsBCBDBF1B"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/POST/Resource"
+   }
+  },
+  "ApireviewsGETApiPermissionArchRevAppApiF04690A0GETreviews1B864D12": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       },
+       "/GET/reviews"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/GET/ApiPermission.ArchRevAppApiF04690A0.GET..reviews"
+   }
+  },
+  "ApireviewsGETApiPermissionTestArchRevAppApiF04690A0GETreviewsCC452875": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/reviews"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..reviews"
+   }
+  },
+  "ApireviewsGET8FD667D1": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "AuthorizerBD825682"
+    },
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-west-2:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiFnE0725F78",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "ApireviewsBCBDBF1B"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/GET/Resource"
+   }
+  },
+  "Apireviewsid3FF81585": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "ApireviewsBCBDBF1B"
+    },
+    "PathPart": "{id}",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/{id}/Resource"
+   }
+  },
+  "ApireviewsidOPTIONS2E04A775": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,X-Correlation-Id'",
+        "method.response.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+        "method.response.header.Vary": "'Origin'",
+        "method.response.header.Access-Control-Allow-Methods": "'GET,POST,OPTIONS'",
+        "method.response.header.Access-Control-Max-Age": "'3600'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Vary": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "Apireviewsid3FF81585"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/{id}/OPTIONS/Resource"
+   }
+  },
+  "ApireviewsidGETApiPermissionArchRevAppApiF04690A0GETreviewsidF700FC3E": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       },
+       "/GET/reviews/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/{id}/GET/ApiPermission.ArchRevAppApiF04690A0.GET..reviews.{id}"
+   }
+  },
+  "ApireviewsidGETApiPermissionTestArchRevAppApiF04690A0GETreviewsidF44BF778": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ApiFnE0725F78",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-west-2:154833006816:",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/test-invoke-stage/GET/reviews/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/{id}/GET/ApiPermission.Test.ArchRevAppApiF04690A0.GET..reviews.{id}"
+   }
+  },
+  "ApireviewsidGETE0917F68": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "COGNITO_USER_POOLS",
+    "AuthorizerId": {
+     "Ref": "AuthorizerBD825682"
+    },
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-west-2:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "ApiFnE0725F78",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "Apireviewsid3FF81585"
+    },
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default/reviews/{id}/GET/Resource"
+   }
+  },
+  "ApiDefault4xx3D30C544": {
+   "Type": "AWS::ApiGateway::GatewayResponse",
+   "Properties": {
+    "ResponseParameters": {
+     "gatewayresponse.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+     "gatewayresponse.header.Vary": "'Origin'"
+    },
+    "ResponseTemplates": {
+     "application/json": "{\"error\":{\"code\":\"$context.error.responseType\",\"message\":$context.error.messageString}}"
+    },
+    "ResponseType": "DEFAULT_4XX",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default4xx/Resource"
+   }
+  },
+  "ApiDefault5xx350DA352": {
+   "Type": "AWS::ApiGateway::GatewayResponse",
+   "Properties": {
+    "ResponseParameters": {
+     "gatewayresponse.header.Access-Control-Allow-Origin": "'https://archreview.awsteach.com'",
+     "gatewayresponse.header.Vary": "'Origin'"
+    },
+    "ResponseTemplates": {
+     "application/json": "{\"error\":{\"code\":\"$context.error.responseType\",\"message\":$context.error.messageString}}"
+    },
+    "ResponseType": "DEFAULT_5XX",
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api/Default5xx/Resource"
+   }
+  },
+  "AuthorizerBD825682": {
+   "Type": "AWS::ApiGateway::Authorizer",
+   "Properties": {
+    "IdentitySource": "method.request.header.Authorization",
+    "Name": "ArchRevAppAuthorizer5D3DF31A",
+    "ProviderARNs": [
+     {
+      "Fn::GetAtt": [
+       "Users0A0EEA89",
+       "Arn"
+      ]
+     }
+    ],
+    "RestApiId": {
+     "Ref": "ApiF70053CD"
+    },
+    "Type": "COGNITO_USER_POOLS"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Authorizer/Resource"
+   }
+  },
+  "ApiAcl": {
+   "Type": "AWS::WAFv2::WebACL",
+   "Properties": {
+    "DefaultAction": {
+     "Allow": {}
+    },
+    "Name": "archrev-api-acl",
+    "Rules": [
+     {
+      "Action": {
+       "Block": {}
+      },
+      "Name": "RateLimitPerIp",
+      "Priority": 0,
+      "Statement": {
+       "RateBasedStatement": {
+        "AggregateKeyType": "IP",
+        "EvaluationWindowSec": 300,
+        "Limit": 300
+       }
+      },
+      "VisibilityConfig": {
+       "CloudWatchMetricsEnabled": true,
+       "MetricName": "archrev-api-rate",
+       "SampledRequestsEnabled": true
+      }
+     },
+     {
+      "Action": {
+       "Block": {}
+      },
+      "Name": "AuthRateLimitPerIp",
+      "Priority": 1,
+      "Statement": {
+       "RateBasedStatement": {
+        "AggregateKeyType": "IP",
+        "EvaluationWindowSec": 300,
+        "Limit": 100,
+        "ScopeDownStatement": {
+         "ByteMatchStatement": {
+          "FieldToMatch": {
+           "UriPath": {}
+          },
+          "PositionalConstraint": "CONTAINS",
+          "SearchString": "/auth/",
+          "TextTransformations": [
+           {
+            "Priority": 0,
+            "Type": "LOWERCASE"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "VisibilityConfig": {
+       "CloudWatchMetricsEnabled": true,
+       "MetricName": "archrev-api-auth-rate",
+       "SampledRequestsEnabled": true
+      }
+     },
+     {
+      "Name": "AWSCommon",
+      "OverrideAction": {
+       "None": {}
+      },
+      "Priority": 2,
+      "Statement": {
+       "ManagedRuleGroupStatement": {
+        "Name": "AWSManagedRulesCommonRuleSet",
+        "VendorName": "AWS"
+       }
+      },
+      "VisibilityConfig": {
+       "CloudWatchMetricsEnabled": true,
+       "MetricName": "archrev-api-common",
+       "SampledRequestsEnabled": true
+      }
+     }
+    ],
+    "Scope": "REGIONAL",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "VisibilityConfig": {
+     "CloudWatchMetricsEnabled": true,
+     "MetricName": "archrev-api",
+     "SampledRequestsEnabled": true
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiAcl"
+   }
+  },
+  "ApiAclAssoc": {
+   "Type": "AWS::WAFv2::WebACLAssociation",
+   "Properties": {
+    "ResourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":apigateway:us-west-2::/restapis/",
+       {
+        "Ref": "ApiF70053CD"
+       },
+       "/stages/",
+       {
+        "Ref": "ApiDeploymentStagev102147F91"
+       }
+      ]
+     ]
+    },
+    "WebACLArn": {
+     "Fn::GetAtt": [
+      "ApiAcl",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiAclAssoc"
+   }
+  },
+  "SiteE53D7754": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "aws-cdk:auto-delete-objects",
+      "Value": "true"
+     },
+     {
+      "Key": "aws-cdk:cr-owned:fb6d3e87",
+      "Value": "true"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Site/Resource"
+   }
+  },
+  "SitePolicyC4000D7D": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "SiteE53D7754"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "SiteE53D7754",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "SiteE53D7754",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:PutBucketPolicy",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::GetAtt": [
+          "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+          "Arn"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "SiteE53D7754",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "SiteE53D7754",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "s3:GetObject",
+       "Condition": {
+        "StringEquals": {
+         "AWS:SourceArn": {
+          "Fn::Join": [
+           "",
+           [
+            "arn:",
+            {
+             "Ref": "AWS::Partition"
+            },
+            ":cloudfront::",
+            {
+             "Ref": "AWS::AccountId"
+            },
+            ":distribution/",
+            {
+             "Ref": "Cdn9963B1AD"
+            }
+           ]
+          ]
+         }
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+       },
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "SiteE53D7754",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Site/Policy/Resource"
+   }
+  },
+  "SiteAutoDeleteObjectsCustomResourceBFAA9B42": {
+   "Type": "Custom::S3AutoDeleteObjects",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "SiteE53D7754"
+    }
+   },
+   "DependsOn": [
+    "SitePolicyC4000D7D"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Site/AutoDeleteObjectsCustomResource/Default"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+     "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs24.x",
+    "Description": {
+     "Fn::Join": [
+      "",
+      [
+       "Lambda function for auto-deleting objects in ",
+       {
+        "Ref": "SiteE53D7754"
+       },
+       " S3 bucket."
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+    "aws:asset:property": "Code"
+   }
+  },
+  "SecurityHeadersE66B69D3": {
+   "Type": "AWS::CloudFront::ResponseHeadersPolicy",
+   "Properties": {
+    "ResponseHeadersPolicyConfig": {
+     "Name": "archrev-security-headers",
+     "SecurityHeadersConfig": {
+      "ContentSecurityPolicy": {
+       "ContentSecurityPolicy": {
+        "Fn::Join": [
+         "",
+         [
+          "default-src 'self'; connect-src 'self' https://",
+          {
+           "Ref": "ApiF70053CD"
+          },
+          ".execute-api.us-west-2.amazonaws.com; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+         ]
+        ]
+       },
+       "Override": true
+      },
+      "ContentTypeOptions": {
+       "Override": true
+      },
+      "FrameOptions": {
+       "FrameOption": "DENY",
+       "Override": true
+      },
+      "ReferrerPolicy": {
+       "Override": true,
+       "ReferrerPolicy": "strict-origin-when-cross-origin"
+      },
+      "StrictTransportSecurity": {
+       "AccessControlMaxAgeSec": 31536000,
+       "IncludeSubdomains": false,
+       "Override": true
+      }
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/SecurityHeaders/Resource"
+   }
+  },
+  "CdnOrigin1S3OriginAccessControl6AC0AEFC": {
+   "Type": "AWS::CloudFront::OriginAccessControl",
+   "Properties": {
+    "OriginAccessControlConfig": {
+     "Name": "ArchRevAppCdnOrigin1S3OriginAccessControl738AF6BB",
+     "OriginAccessControlOriginType": "s3",
+     "SigningBehavior": "always",
+     "SigningProtocol": "sigv4"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Cdn/Origin1/S3OriginAccessControl/Resource"
+   }
+  },
+  "Cdn9963B1AD": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "Aliases": [
+      "archreview.awsteach.com"
+     ],
+     "Comment": "Enterprise Solution Review Assistant (demo)",
+     "DefaultCacheBehavior": {
+      "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+      "Compress": true,
+      "ResponseHeadersPolicyId": {
+       "Ref": "SecurityHeadersE66B69D3"
+      },
+      "TargetOriginId": "ArchRevAppCdnOrigin18941F885",
+      "ViewerProtocolPolicy": "redirect-to-https"
+     },
+     "DefaultRootObject": "index.html",
+     "Enabled": true,
+     "HttpVersion": "http2and3",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "DomainName": {
+        "Fn::GetAtt": [
+         "SiteE53D7754",
+         "RegionalDomainName"
+        ]
+       },
+       "Id": "ArchRevAppCdnOrigin18941F885",
+       "OriginAccessControlId": {
+        "Fn::GetAtt": [
+         "CdnOrigin1S3OriginAccessControl6AC0AEFC",
+         "Id"
+        ]
+       },
+       "S3OriginConfig": {
+        "OriginAccessIdentity": ""
+       }
+      }
+     ],
+     "PriceClass": "PriceClass_100",
+     "ViewerCertificate": {
+      "AcmCertificateArn": {
+       "Fn::GetAtt": [
+        "ExportsReader8B249524",
+        "/cdk/exports/ArchRevApp/ArchRevEdgeuseast1RefSiteCert6025247CE6D481AD"
+       ]
+      },
+      "MinimumProtocolVersion": "TLSv1.2_2021",
+      "SslSupportMethod": "sni-only"
+     },
+     "WebACLId": {
+      "Fn::GetAtt": [
+       "ExportsReader8B249524",
+       "/cdk/exports/ArchRevApp/ArchRevEdgeuseast1FnGetAttCloudFrontAclArn51C5176A"
+      ]
+     }
+    },
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Cdn/Resource"
+   }
+  },
+  "DeploySiteAwsCliLayer88B0EBE2": {
+   "Type": "AWS::Lambda::LayerVersion",
+   "Properties": {
+    "Content": {
+     "S3Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+     "S3Key": "98f62bef9320f8c0a0a7be21d7c746f069131f196f51ffe3008a6bb730b368ec.zip"
+    },
+    "Description": "/opt/awscli/aws"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/DeploySite/AwsCliLayer/Resource",
+    "aws:asset:path": "asset.98f62bef9320f8c0a0a7be21d7c746f069131f196f51ffe3008a6bb730b368ec.zip",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Content"
+   }
+  },
+  "DeploySiteCustomResource512MiB5775DB62": {
+   "Type": "Custom::CDKBucketDeployment",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB6723FB92",
+      "Arn"
+     ]
+    },
+    "SourceBucketNames": [
+     "cdk-archrev-assets-154833006816-us-west-2",
+     "cdk-archrev-assets-154833006816-us-west-2",
+     "cdk-archrev-assets-154833006816-us-west-2"
+    ],
+    "SourceObjectKeys": [
+     "18281c0f5f654842e9c94ce020600d9268148ab64ed177985e7e51c064f1000e.zip",
+     "987ec3d2d5f0932a8ff2c6fba88b41581ad0517ca08240a5a028091ebcf5a7ed.zip",
+     "00d4b702bdf0d67f6514f918681faeb13f1cbdcb9b820f751e10d0fe4eaa3142.zip"
+    ],
+    "SourceMarkers": [
+     {},
+     {},
+     {
+      "<<marker:0xbaba:0>>": {
+       "Fn::Join": [
+        "",
+        [
+         "\"https://",
+         {
+          "Ref": "ApiF70053CD"
+         },
+         ".execute-api.us-west-2.",
+         {
+          "Ref": "AWS::URLSuffix"
+         },
+         "/",
+         {
+          "Ref": "ApiDeploymentStagev102147F91"
+         },
+         "\""
+        ]
+       ]
+      }
+     }
+    ],
+    "SourceMarkersConfig": [
+     {},
+     {},
+     {}
+    ],
+    "DestinationBucketName": {
+     "Ref": "SiteE53D7754"
+    },
+    "WaitForDistributionInvalidation": true,
+    "Prune": true,
+    "DistributionId": {
+     "Ref": "Cdn9963B1AD"
+    },
+    "DistributionPaths": [
+     "/*"
+    ],
+    "OutputObjectKeys": true
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/DeploySite/CustomResource-512MiB/Default"
+   }
+  },
+  "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleBA21DBC1": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB/ServiceRole/Resource"
+   }
+  },
+  "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleDefaultPolicy96C3E726": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::cdk-archrev-assets-154833006816-us-west-2"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:",
+           {
+            "Ref": "AWS::Partition"
+           },
+           ":s3:::cdk-archrev-assets-154833006816-us-west-2/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging",
+        "s3:Abort*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "SiteE53D7754",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "SiteE53D7754",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "cloudfront:GetInvalidation",
+        "cloudfront:CreateInvalidation"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleDefaultPolicy96C3E726",
+    "Roles": [
+     {
+      "Ref": "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleBA21DBC1"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB6723FB92": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "arm64"
+    ],
+    "Code": {
+     "S3Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+     "S3Key": "35328da138f26fbd9160297abc9a2522d93dbf75878cd5114a9c050419fc1ce0.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_CA_BUNDLE": "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+     }
+    },
+    "Handler": "index.handler",
+    "Layers": [
+     {
+      "Ref": "DeploySiteAwsCliLayer88B0EBE2"
+     }
+    ],
+    "MemorySize": 512,
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleBA21DBC1",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Timeout": 900
+   },
+   "DependsOn": [
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleDefaultPolicy96C3E726",
+    "CustomCDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiBServiceRoleBA21DBC1"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C512MiB/Resource",
+    "aws:asset:path": "asset.35328da138f26fbd9160297abc9a2522d93dbf75878cd5114a9c050419fc1ce0",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "SiteA3B2F7CD6": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "Cdn9963B1AD",
+       "DomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::FindInMap": [
+       "AWSCloudFrontPartitionHostedZoneIdMap",
+       {
+        "Ref": "AWS::Partition"
+       },
+       "zoneId"
+      ]
+     }
+    },
+    "HostedZoneId": "Z02882605B7GUS0L3VHX",
+    "Name": "archreview.awsteach.com.",
+    "Type": "A"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/SiteA/Resource"
+   }
+  },
+  "SiteAAAA213135E7": {
+   "Type": "AWS::Route53::RecordSet",
+   "Properties": {
+    "AliasTarget": {
+     "DNSName": {
+      "Fn::GetAtt": [
+       "Cdn9963B1AD",
+       "DomainName"
+      ]
+     },
+     "HostedZoneId": {
+      "Fn::FindInMap": [
+       "AWSCloudFrontPartitionHostedZoneIdMap",
+       {
+        "Ref": "AWS::Partition"
+       },
+       "zoneId"
+      ]
+     }
+    },
+    "HostedZoneId": "Z02882605B7GUS0L3VHX",
+    "Name": "archreview.awsteach.com.",
+    "Type": "AAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/SiteAAAA/Resource"
+   }
+  },
+  "Alarms04B5A0BF": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "DisplayName": "archrev alarms",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Alarms/Resource"
+   }
+  },
+  "WorkerErrorsDD2E3D24": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmActions": [
+     {
+      "Ref": "Alarms04B5A0BF"
+     }
+    ],
+    "AlarmDescription": "Review worker Lambda errors",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "FunctionName",
+      "Value": {
+       "Ref": "Worker11F36D0F"
+      }
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "Errors",
+    "Namespace": "AWS/Lambda",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Threshold": 1,
+    "TreatMissingData": "notBreaching"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/WorkerErrors/Resource"
+   }
+  },
+  "ReviewsFailed69A8E2A2": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmActions": [
+     {
+      "Ref": "Alarms04B5A0BF"
+     }
+    ],
+    "AlarmDescription": "Reviews ending in failed status",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "EvaluationPeriods": 1,
+    "MetricName": "ReviewsFailed",
+    "Namespace": "ArchReview",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Threshold": 1,
+    "TreatMissingData": "notBreaching"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ReviewsFailed/Resource"
+   }
+  },
+  "Api5xx3D9EE91A": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmActions": [
+     {
+      "Ref": "Alarms04B5A0BF"
+     }
+    ],
+    "AlarmDescription": "API 5xx responses",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "ApiName",
+      "Value": "archrev-api"
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "5XXError",
+    "Namespace": "AWS/ApiGateway",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Threshold": 5,
+    "TreatMissingData": "notBreaching"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Api5xx/Resource"
+   }
+  },
+  "ApiLatencyP953F4AC26C": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmActions": [
+     {
+      "Ref": "Alarms04B5A0BF"
+     }
+    ],
+    "AlarmDescription": "API p95 latency above 5 s",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "ApiName",
+      "Value": "archrev-api"
+     }
+    ],
+    "EvaluationPeriods": 2,
+    "ExtendedStatistic": "p95",
+    "MetricName": "Latency",
+    "Namespace": "AWS/ApiGateway",
+    "Period": 300,
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Threshold": 5000,
+    "TreatMissingData": "notBreaching"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ApiLatencyP95/Resource"
+   }
+  },
+  "McpErrors0263254E2": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmActions": [
+     {
+      "Ref": "Alarms04B5A0BF"
+     }
+    ],
+    "AlarmDescription": "MCP call failures to enterprise-standards",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "Server",
+      "Value": "enterprise-standards"
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "McpCallErrors",
+    "Namespace": "ArchReview",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Threshold": 3,
+    "TreatMissingData": "notBreaching"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/McpErrors0/Resource"
+   }
+  },
+  "McpErrors103C43072": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmActions": [
+     {
+      "Ref": "Alarms04B5A0BF"
+     }
+    ],
+    "AlarmDescription": "MCP call failures to approved-service-catalog",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "Server",
+      "Value": "approved-service-catalog"
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "McpCallErrors",
+    "Namespace": "ArchReview",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ],
+    "Threshold": 3,
+    "TreatMissingData": "notBreaching"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/McpErrors1/Resource"
+   }
+  },
+  "Dashboard9E4231ED": {
+   "Type": "AWS::CloudWatch::Dashboard",
+   "Properties": {
+    "DashboardBody": {
+     "Fn::Join": [
+      "",
+      [
+       "{\"widgets\":[{\"type\":\"text\",\"width\":24,\"height\":2,\"x\":0,\"y\":0,\"properties\":{\"markdown\":\"# Enterprise Solution Review Assistant (synthetic demo)\\nAPI, agent, and MCP health. Correlation IDs link API, worker, and MCP runtime logs.\"}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":2,\"properties\":{\"view\":\"timeSeries\",\"title\":\"Reviews\",\"region\":\"",
+       {
+        "Ref": "AWS::Region"
+       },
+       "\",\"metrics\":[[\"ArchReview\",\"ReviewsSubmitted\",{\"stat\":\"Sum\"}],[\"ArchReview\",\"ReviewsCompleted\",\"Status\",\"complete\",{\"stat\":\"Sum\"}],[\"ArchReview\",\"ReviewsCompleted\",\"Status\",\"partial\",{\"stat\":\"Sum\"}],[\"ArchReview\",\"ReviewsFailed\",{\"stat\":\"Sum\"}],[\"ArchReview\",\"ReviewsUsingBothServers\",{\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":2,\"properties\":{\"view\":\"timeSeries\",\"title\":\"Review duration (ms)\",\"region\":\"",
+       {
+        "Ref": "AWS::Region"
+       },
+       "\",\"metrics\":[[\"ArchReview\",\"ReviewDuration\"],[\"ArchReview\",\"ReviewDuration\",{\"stat\":\"p90\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":8,\"properties\":{\"view\":\"timeSeries\",\"title\":\"MCP calls by server\",\"region\":\"",
+       {
+        "Ref": "AWS::Region"
+       },
+       "\",\"metrics\":[[\"ArchReview\",\"McpCalls\",\"Server\",\"enterprise-standards\",{\"stat\":\"Sum\"}],[\"ArchReview\",\"McpCalls\",\"Server\",\"approved-service-catalog\",{\"stat\":\"Sum\"}],[\"ArchReview\",\"McpCallErrors\",\"Server\",\"enterprise-standards\",{\"stat\":\"Sum\",\"yAxis\":\"right\"}],[\"ArchReview\",\"McpCallErrors\",\"Server\",\"approved-service-catalog\",{\"stat\":\"Sum\",\"yAxis\":\"right\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":8,\"properties\":{\"view\":\"timeSeries\",\"title\":\"MCP latency p90 (ms)\",\"region\":\"",
+       {
+        "Ref": "AWS::Region"
+       },
+       "\",\"metrics\":[[\"ArchReview\",\"McpCallLatency\",\"Server\",\"enterprise-standards\",{\"stat\":\"p90\"}],[\"ArchReview\",\"McpCallLatency\",\"Server\",\"approved-service-catalog\",{\"stat\":\"p90\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":0,\"y\":14,\"properties\":{\"view\":\"timeSeries\",\"title\":\"API requests / errors\",\"region\":\"",
+       {
+        "Ref": "AWS::Region"
+       },
+       "\",\"metrics\":[[\"AWS/ApiGateway\",\"Count\",\"ApiName\",\"archrev-api\",{\"stat\":\"SampleCount\"}],[\"AWS/ApiGateway\",\"4XXError\",\"ApiName\",\"archrev-api\",{\"stat\":\"Sum\"}],[\"AWS/ApiGateway\",\"5XXError\",\"ApiName\",\"archrev-api\",{\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"metric\",\"width\":12,\"height\":6,\"x\":12,\"y\":14,\"properties\":{\"view\":\"timeSeries\",\"title\":\"Lambda errors & throttles\",\"region\":\"",
+       {
+        "Ref": "AWS::Region"
+       },
+       "\",\"metrics\":[[\"AWS/Lambda\",\"Errors\",\"FunctionName\",\"",
+       {
+        "Ref": "Worker11F36D0F"
+       },
+       "\",{\"stat\":\"Sum\"}],[\"AWS/Lambda\",\"Errors\",\"FunctionName\",\"",
+       {
+        "Ref": "ApiFnE0725F78"
+       },
+       "\",{\"stat\":\"Sum\"}],[\"AWS/Lambda\",\"Throttles\",\"FunctionName\",\"",
+       {
+        "Ref": "Worker11F36D0F"
+       },
+       "\",{\"stat\":\"Sum\"}]],\"yAxis\":{}}},{\"type\":\"alarm\",\"width\":24,\"height\":3,\"x\":0,\"y\":20,\"properties\":{\"title\":\"Alarms\",\"alarms\":[\"",
+       {
+        "Fn::GetAtt": [
+         "WorkerErrorsDD2E3D24",
+         "Arn"
+        ]
+       },
+       "\",\"",
+       {
+        "Fn::GetAtt": [
+         "ReviewsFailed69A8E2A2",
+         "Arn"
+        ]
+       },
+       "\",\"",
+       {
+        "Fn::GetAtt": [
+         "Api5xx3D9EE91A",
+         "Arn"
+        ]
+       },
+       "\",\"",
+       {
+        "Fn::GetAtt": [
+         "ApiLatencyP953F4AC26C",
+         "Arn"
+        ]
+       },
+       "\",\"",
+       {
+        "Fn::GetAtt": [
+         "McpErrors0263254E2",
+         "Arn"
+        ]
+       },
+       "\",\"",
+       {
+        "Fn::GetAtt": [
+         "McpErrors103C43072",
+         "Arn"
+        ]
+       },
+       "\"]}},{\"type\":\"log\",\"width\":24,\"height\":6,\"x\":0,\"y\":23,\"properties\":{\"view\":\"table\",\"title\":\"Recent errors (worker + API)\",\"region\":\"",
+       {
+        "Ref": "AWS::Region"
+       },
+       "\",\"query\":\"SOURCE '",
+       {
+        "Ref": "WorkerLogsC1193B08"
+       },
+       "' | SOURCE '",
+       {
+        "Ref": "ApiFnLogsADB874AE"
+       },
+       "' | fields @timestamp, event, correlation_id, error, detail\\n| filter level = \\\"ERROR\\\" or level = \\\"WARN\\\"\\n| sort @timestamp desc\\n| limit 50\"}}]}"
+      ]
+     ]
+    },
+    "DashboardName": "archrev-demo",
+    "Tags": [
+     {
+      "Key": "Application",
+      "Value": "EnterpriseSolutionReviewAssistant"
+     },
+     {
+      "Key": "Environment",
+      "Value": "demo"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Dashboard/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/5VUTW/bMAz9Lc1Z0bpkRYHd3GTrBnRokHTbYRgCWmYcNbZoiHSyzPB/HyTla2h32EmPfNKjRD57pEe3N/r6CnY8NMVmWNlcdwsBs1Gw42XH42UHzCiss7CoApuK9jU60Xet2aBMT4le8Vh3KXsHjCpBNVm5hH50g9r+sm7wfnBZLxTisY4UH1SzVmiKFQo+5s9ohAf9z4PejCpr9mfVFP+HdjqwEBAM1w7SvbJQ625OFQbhuJ7rJNSrHAtPZgMlOjHkUYetrRNbo2KuQ+O8deUMPNQo6OPZY9CrYu+gpiLX3RPkqVAEvTJUOiuku6+MfkZUBe6Ej2BSWXRySb3M3Htqm15VVLLuHqiMcdhwxL2qoM4L0N3H1hmx5AJ7wh+26OSz29IGJ+RWtgzsq8kZ+toyHwQeYI/+G/oYL6wrKxQ6yfYKGluC4A72upsjS9bY2OgzzIyh1ok6+ylkL6KFQBmblsAcmVpvMDrtC8qaikAe0JE9FEn4Pt1gjtyQ48i9SKVJHNvJWStr8vZ3GuY56tUOVtuR7iYr9x3zbPKgTihjJmMhPdxU1BYrT07iw2OVTwgFej4b7HVialm8zds4mMX40dvShjYh84Sc+GSTf6QvD/fKUyt4M9ZdNkdDvkhFA1qgqAwAUtQrdqy7J2qsif4M4PCIHYhZ6y6rwNexGRFMgdc5QZI8BX2v4u8ijMq66JfHVppWLgbTslD96pz+pmaetrZAHwedzLusgt2WsGNTWZ3teFLZ6MDoAGga68peOSpQP/Ob7eidfnurr6+e2dqhTx+sPny4fwBon7xQAQUAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/CDKMetadata/Default"
+   }
+  },
+  "ExportsReader8B249524": {
+   "Type": "Custom::CrossRegionExportReader",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomCrossRegionExportReaderCustomResourceProviderHandler46647B68",
+      "Arn"
+     ]
+    },
+    "ReaderProps": {
+     "region": "us-west-2",
+     "prefix": "ArchRevApp",
+     "imports": {
+      "/cdk/exports/ArchRevApp/ArchRevEdgeuseast1RefSiteCert6025247CE6D481AD": "{{resolve:ssm:/cdk/exports/ArchRevApp/ArchRevEdgeuseast1RefSiteCert6025247CE6D481AD}}",
+      "/cdk/exports/ArchRevApp/ArchRevEdgeuseast1FnGetAttCloudFrontAclArn51C5176A": "{{resolve:ssm:/cdk/exports/ArchRevApp/ArchRevEdgeuseast1FnGetAttCloudFrontAclArn51C5176A}}"
+     }
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/ExportsReader/Resource/Default"
+   }
+  },
+  "CustomCrossRegionExportReaderCustomResourceProviderRole10531BBD": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ],
+    "Policies": [
+     {
+      "PolicyName": "Inline",
+      "PolicyDocument": {
+       "Version": "2012-10-17",
+       "Statement": [
+        {
+         "Effect": "Allow",
+         "Resource": {
+          "Fn::Join": [
+           "",
+           [
+            "arn:",
+            {
+             "Ref": "AWS::Partition"
+            },
+            ":ssm:us-west-2:154833006816:parameter/cdk/exports/ArchRevApp/*"
+           ]
+          ]
+         },
+         "Action": [
+          "ssm:AddTagsToResource",
+          "ssm:RemoveTagsFromResource",
+          "ssm:GetParameters"
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Custom::CrossRegionExportReaderCustomResourceProvider/Role"
+   }
+  },
+  "CustomCrossRegionExportReaderCustomResourceProviderHandler46647B68": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-archrev-assets-154833006816-us-west-2",
+     "S3Key": "f8b7112ff78fd0b6fab4c6b048fc1da9945198135db9a1e6b1d5cb4599d5a3d2.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "__entrypoint__.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomCrossRegionExportReaderCustomResourceProviderRole10531BBD",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs24.x"
+   },
+   "DependsOn": [
+    "CustomCrossRegionExportReaderCustomResourceProviderRole10531BBD"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ArchRevApp/Custom::CrossRegionExportReaderCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.f8b7112ff78fd0b6fab4c6b048fc1da9945198135db9a1e6b1d5cb4599d5a3d2",
+    "aws:asset:property": "Code"
+   }
+  }
+ },
+ "Outputs": {
+  "standardsRuntimeArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "standardsRuntime",
+     "AgentRuntimeArn"
+    ]
+   }
+  },
+  "catalogRuntimeArn": {
+   "Value": {
+    "Fn::GetAtt": [
+     "catalogRuntime",
+     "AgentRuntimeArn"
+    ]
+   }
+  },
+  "ApiEndpoint4F160690": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ApiF70053CD"
+      },
+      ".execute-api.us-west-2.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ApiDeploymentStagev102147F91"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "SiteUrl": {
+   "Value": "https://archreview.awsteach.com"
+  },
+  "CloudFrontDomain": {
+   "Value": {
+    "Fn::GetAtt": [
+     "Cdn9963B1AD",
+     "DomainName"
+    ]
+   }
+  },
+  "CloudFrontDistributionId": {
+   "Value": {
+    "Ref": "Cdn9963B1AD"
+   }
+  },
+  "ApiUrl": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ApiF70053CD"
+      },
+      ".execute-api.us-west-2.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ApiDeploymentStagev102147F91"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "UserPoolId": {
+   "Value": {
+    "Ref": "Users0A0EEA89"
+   }
+  },
+  "UserPoolClientId": {
+   "Value": {
+    "Ref": "UsersWebClient8EE36D42"
+   }
+  },
+  "TableName": {
+   "Value": {
+    "Ref": "ReviewsAA74421E"
+   }
+  },
+  "WorkerFunctionName": {
+   "Value": {
+    "Ref": "Worker11F36D0F"
+   }
+  },
+  "ApiFunctionName": {
+   "Value": {
+    "Ref": "ApiFnE0725F78"
+   }
+  },
+  "DashboardName": {
+   "Value": "archrev-demo"
+  },
+  "AlarmTopicArn": {
+   "Value": {
+    "Ref": "Alarms04B5A0BF"
+   }
+  }
+ },
+ "Mappings": {
+  "AWSCloudFrontPartitionHostedZoneIdMap": {
+   "aws": {
+    "zoneId": "Z2FDTNDATAQYW2"
+   },
+   "aws-cn": {
+    "zoneId": "Z3RFFRIM2A3IF5"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/archrev/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

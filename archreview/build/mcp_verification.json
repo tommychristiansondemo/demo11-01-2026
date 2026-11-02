@@ -1,0 +1,252 @@
+{
+  "region": "us-west-2",
+  "runtimes": {
+    "enterprise-standards": {
+      "agentRuntimeName": "archrev_standards_mcp",
+      "agentRuntimeId": "archrev_standards_mcp-OfMjbH9rKl",
+      "agentRuntimeArn": "arn:aws:bedrock-agentcore:us-west-2:154833006816:runtime/archrev_standards_mcp-OfMjbH9rKl",
+      "status": "READY",
+      "protocol": "MCP",
+      "roleArn": "arn:aws:iam::154833006816:role/ArchRevApp-standardsMcpRoleAC81747D-QJImgNKgEKfV",
+      "version": "1",
+      "artifact": "codeConfiguration",
+      "tools": [
+        "get_standard",
+        "list_required_controls",
+        "search_standards"
+      ]
+    },
+    "approved-service-catalog": {
+      "agentRuntimeName": "archrev_catalog_mcp",
+      "agentRuntimeId": "archrev_catalog_mcp-EEhX9dDawJ",
+      "agentRuntimeArn": "arn:aws:bedrock-agentcore:us-west-2:154833006816:runtime/archrev_catalog_mcp-EEhX9dDawJ",
+      "status": "READY",
+      "protocol": "MCP",
+      "roleArn": "arn:aws:iam::154833006816:role/ArchRevApp-catalogMcpRole676B9AB3-iGVr458SFz5s",
+      "version": "1",
+      "artifact": "codeConfiguration",
+      "tools": [
+        "compare_services",
+        "find_reference_pattern",
+        "get_service_profile",
+        "search_services"
+      ]
+    }
+  },
+  "tool_calls": [
+    {
+      "server": "enterprise-standards",
+      "tool": "search_standards",
+      "args": {
+        "query": "multi-region disaster recovery for 99.99 availability"
+      },
+      "ok": true,
+      "duration_ms": 4533.6,
+      "attempts": 1,
+      "record_ids": [
+        "STD-AI-001",
+        "STD-AI-002",
+        "STD-ARC-001",
+        "STD-ARC-002",
+        "STD-DR-001"
+      ],
+      "summary": {
+        "result_count": 5,
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "enterprise-standards"
+      }
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "search_standards",
+      "args": {
+        "query": "logs",
+        "category": "privacy"
+      },
+      "ok": true,
+      "duration_ms": 4312.9,
+      "attempts": 1,
+      "record_ids": [
+        "STD-PRV-001",
+        "STD-PRV-002"
+      ],
+      "summary": {
+        "result_count": 2,
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "enterprise-standards"
+      }
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "get_standard",
+      "args": {
+        "standard_id": "STD-AI-002"
+      },
+      "ok": true,
+      "duration_ms": 4580.1,
+      "attempts": 1,
+      "record_ids": [
+        "CTL-AI-03",
+        "CTL-AI-04",
+        "STD-AI-002"
+      ],
+      "summary": {
+        "found": true,
+        "record_id": "STD-AI-002",
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "enterprise-standards"
+      }
+    },
+    {
+      "server": "enterprise-standards",
+      "tool": "list_required_controls",
+      "args": {
+        "risk_level": "high",
+        "data_classification": "confidential"
+      },
+      "ok": true,
+      "duration_ms": 3938.6,
+      "attempts": 1,
+      "record_ids": [
+        "CTL-AI-01",
+        "CTL-AI-02",
+        "CTL-AI-03",
+        "CTL-AI-04",
+        "CTL-ARC-01",
+        "CTL-ARC-02",
+        "CTL-ARC-03",
+        "CTL-DR-01",
+        "CTL-DR-02",
+        "CTL-ENC-01",
+        "CTL-ENC-02",
+        "CTL-ENC-03",
+        "CTL-IAM-01",
+        "CTL-IAM-02",
+        "CTL-IAM-03",
+        "CTL-IAM-04",
+        "CTL-LOG-01",
+        "CTL-LOG-02",
+        "CTL-LOG-03",
+        "CTL-PRV-01",
+        "CTL-PRV-02",
+        "CTL-PRV-03",
+        "CTL-TPI-01",
+        "CTL-TPI-02",
+        "CTL-TPI-03",
+        "CTL-TPI-04",
+        "STD-AI-001",
+        "STD-AI-002",
+        "STD-ARC-001",
+        "STD-ARC-002",
+        "STD-DR-001",
+        "STD-ENC-001",
+        "STD-ENC-002",
+        "STD-IAM-001",
+        "STD-IAM-002",
+        "STD-LOG-001",
+        "STD-LOG-002",
+        "STD-PRV-001",
+        "STD-PRV-002",
+        "STD-TPI-001",
+        "STD-TPI-002"
+      ],
+      "summary": {
+        "result_count": 26,
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "enterprise-standards"
+      }
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "search_services",
+      "args": {
+        "requirement": "event-driven serverless processing with a queue"
+      },
+      "ok": true,
+      "duration_ms": 4264.2,
+      "attempts": 1,
+      "record_ids": [
+        "SVC-ATHENA",
+        "SVC-EC2",
+        "SVC-EVENTBRIDGE",
+        "SVC-LAMBDA",
+        "SVC-SQS",
+        "SVC-STEPFN"
+      ],
+      "summary": {
+        "result_count": 6,
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "approved-service-catalog"
+      }
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "get_service_profile",
+      "args": {
+        "service_id": "SVC-BEDROCK"
+      },
+      "ok": true,
+      "duration_ms": 3589.4,
+      "attempts": 1,
+      "record_ids": [
+        "SVC-BEDROCK"
+      ],
+      "summary": {
+        "found": true,
+        "record_id": "SVC-BEDROCK",
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "approved-service-catalog"
+      }
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "compare_services",
+      "args": {
+        "service_ids": [
+          "SVC-AURORA",
+          "SVC-DYNAMODB",
+          "SVC-EKS"
+        ]
+      },
+      "ok": true,
+      "duration_ms": 3994.8,
+      "attempts": 1,
+      "record_ids": [
+        "SVC-AURORA",
+        "SVC-DYNAMODB",
+        "SVC-EKS"
+      ],
+      "summary": {
+        "compared": [
+          "SVC-AURORA",
+          "SVC-DYNAMODB",
+          "SVC-EKS"
+        ],
+        "lowest_cost": "SVC-DYNAMODB",
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "approved-service-catalog"
+      }
+    },
+    {
+      "server": "approved-service-catalog",
+      "tool": "find_reference_pattern",
+      "args": {
+        "use_case": "generative AI assistant chatbot"
+      },
+      "ok": true,
+      "duration_ms": 3949.5,
+      "attempts": 1,
+      "record_ids": [
+        "PAT-AI-001"
+      ],
+      "summary": {
+        "result_count": 1,
+        "correlation_id": "cr-verify-mcp-0001",
+        "server": "approved-service-catalog"
+      }
+    }
+  ],
+  "all_ok": true,
+  "distinct": true,
+  "every_tool_invoked": true
+}

@@ -1,0 +1,22 @@
+{
+  "ArchRevEdge": {
+    "CloudFrontWebAclArn": "arn:aws:wafv2:us-east-1:154833006816:global/webacl/archrev-cloudfront-acl/9854c35e-c80f-4862-a611-04b6ac94c639",
+    "CertificateArn": "arn:aws:acm:us-east-1:154833006816:certificate/b049f6c9-2793-47c4-b227-45838db4e0b7"
+  },
+  "ArchRevApp": {
+    "catalogRuntimeArn": "arn:aws:bedrock-agentcore:us-west-2:154833006816:runtime/archrev_catalog_mcp-EEhX9dDawJ",
+    "CloudFrontDistributionId": "E323KWYINSQZDA",
+    "SiteUrl": "https://archreview.awsteach.com",
+    "ApiEndpoint4F160690": "https://cyymo0cvd3.execute-api.us-west-2.amazonaws.com/v1/",
+    "ApiFunctionName": "ArchRevApp-ApiFnE0725F78-kT2xlzvKnCMt",
+    "DashboardName": "archrev-demo",
+    "UserPoolClientId": "3p2pgut75j329sne5i8ivt1286",
+    "TableName": "ArchRevApp-ReviewsAA74421E-3WEFWJA0C76E",
+    "WorkerFunctionName": "ArchRevApp-Worker11F36D0F-Mts0jT13nVtk",
+    "ApiUrl": "https://cyymo0cvd3.execute-api.us-west-2.amazonaws.com/v1/",
+    "UserPoolId": "us-west-2_zzr0j78h3",
+    "CloudFrontDomain": "d2r13fnyquilv0.cloudfront.net",
+    "standardsRuntimeArn": "arn:aws:bedrock-agentcore:us-west-2:154833006816:runtime/archrev_standards_mcp-OfMjbH9rKl",
+    "AlarmTopicArn": "arn:aws:sns:us-west-2:154833006816:ArchRevApp-Alarms04B5A0BF-2OXSbutQUp2J"
+  }
+}
